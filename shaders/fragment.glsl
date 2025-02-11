@@ -26,10 +26,10 @@ vec3 getRasterColor(float barPattern, float barIndex) {
     else if (i == 4.0) outerColor = vec3(t, p, 1.0);
     else outerColor = vec3(1.0, p, q);
     
-    // Adjust saturation and brightness
-    outerColor = outerColor * 0.8 + 0.2;
+    // Adjust saturation and brightness - made darker
+    outerColor = outerColor * 0.4;
     
-    vec3 innerColor = vec3(1.0); // Keep white center
+    vec3 innerColor = vec3(0.9);
     
     return mix(outerColor, innerColor, center);
 }
@@ -38,7 +38,7 @@ void main() {
     // Create bars that move independently
     float numBars = 20.0; // Number of bars
     vec3 color = vec3(0.0);
-    float maxBrightness = 0.0;
+    float maxBrightness = -1.0; // Start at -1 to ensure first bar is always drawn
     
     // Base Y position for all bars
     float baseY = 0.5; // Center of screen
@@ -47,17 +47,17 @@ void main() {
     for (float i = 0.0; i < 12.0; i++) {
         // Calculate phase offset for each bar (distribute across 2π)
         float phase = (i / 12.0) * 6.28318;
-        float yOffset = sin(u_time + phase) * 0.2;
+        float yOffset = sin(u_time * 0.5 + phase) * 0.2;
         
         // Calculate position relative to base Y
         float barY = baseY + yOffset;
         float distanceFromBar = abs(vUv.y - barY);
         
-        // Draw bar if within thickness range (halved from 0.02 to 0.01)
+        // Draw bar if within thickness range
         if (distanceFromBar < 0.01) {
             float normalizedPattern = distanceFromBar / 0.01;
             vec3 barColor = getRasterColor(normalizedPattern, i);
-            float brightness = (barColor.r + barColor.g + barColor.b) / 3.0;
+            float brightness = dot(barColor, vec3(0.299, 0.587, 0.114)); // Better brightness calculation
             
             // Take the brighter color when bars overlap
             if (brightness > maxBrightness) {
@@ -67,5 +67,5 @@ void main() {
         }
     }
     
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = vec4(color, 1.0); // Always fully opaque
 } 
