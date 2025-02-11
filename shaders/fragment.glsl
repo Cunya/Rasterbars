@@ -3,10 +3,9 @@ uniform vec2 u_resolution;
 varying vec2 vUv;
 
 vec3 getRasterColor(float barPattern, float barIndex) {
-    // Create a gradient with bright center
-    float center = abs(barPattern - 0.5) * 2.0;
-    center = 1.0 - center;
-    center = pow(center, 2.0); // Make the bright center more pronounced
+    // Create a single gradient peak at the center
+    float center = 1.0 - barPattern; // Linear falloff from center
+    center = pow(center, 1.5); // Adjust gradient shape
     
     // Create unique colors for each bar
     float hue = barIndex / 12.0; // Distribute hues evenly
@@ -54,9 +53,9 @@ void main() {
         float barY = baseY + yOffset;
         float distanceFromBar = abs(vUv.y - barY);
         
-        // Draw bar if within thickness range
-        if (distanceFromBar < 0.02) {
-            float normalizedPattern = distanceFromBar / 0.02;
+        // Draw bar if within thickness range (halved from 0.02 to 0.01)
+        if (distanceFromBar < 0.01) {
+            float normalizedPattern = distanceFromBar / 0.01;
             vec3 barColor = getRasterColor(normalizedPattern, i);
             float brightness = (barColor.r + barColor.g + barColor.b) / 3.0;
             
