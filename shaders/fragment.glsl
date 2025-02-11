@@ -5,26 +5,25 @@ varying vec2 vUv;
 void main() {
     // Create bars that move independently
     float numBars = 20.0; // Number of bars
-    float barIndex = floor(vUv.y * numBars); // Which bar we're currently rendering
     
-    // Calculate vertical offset for each bar
-    // Phase offset based on bar position
-    float phaseOffset = barIndex * 0.5;
-    float yOffset = sin(u_time * 2.0 + phaseOffset) * 0.1;
+    // Calculate sine wave movement
+    float yOffset = sin(u_time) * 0.2; // Reduced amplitude for testing
     
-    // Create the bar pattern
-    float barPattern = fract(vUv.y * numBars);
-    float bar = smoothstep(0.4, 0.6, barPattern);
+    // Offset the vertical position
+    float offsetY = vUv.y - yOffset;
+    float barIndex = floor(offsetY * numBars);
+    float bars = 0.0;
     
-    // Apply the vertical offset
-    float offsetY = vUv.y + yOffset;
-    float bars = step(0.4, fract(offsetY * numBars));
+    if (barIndex == 10.0) {
+        float barPattern = fract(offsetY * numBars);
+        bars = step(0.4, barPattern) * step(barPattern, 0.6);
+    }
     
     // Add some color variation
     vec3 color = vec3(0.0);
-    color.r = bars * (sin(barIndex * 0.5) * 0.5 + 0.5);
-    color.g = bars * (cos(barIndex * 0.3) * 0.5 + 0.5);
-    color.b = bars * (sin(barIndex * 0.7) * 0.5 + 0.5);
+    color.r = bars * 0.8;
+    color.g = bars * 0.6;
+    color.b = bars * 0.9;
     
     gl_FragColor = vec4(color, 1.0);
 } 
