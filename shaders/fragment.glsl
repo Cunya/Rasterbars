@@ -45,8 +45,8 @@ void main() {
     
     // Create 12 bars with different phases
     for (float i = 0.0; i < 12.0; i++) {
-        // Calculate phase offset for each bar (distribute across 2π)
-        float phase = (i / 12.0) * 6.28318;
+        // Calculate phase offset for each bar (distribute across π instead of 2π)
+        float phase = (i / 12.0) * 3.14159;
         float yOffset = sin(u_time * 0.5 + phase) * 0.2;
         
         // Calculate position relative to base Y
@@ -57,7 +57,7 @@ void main() {
         if (distanceFromBar < 0.01) {
             float normalizedPattern = distanceFromBar / 0.01;
             vec3 barColor = getRasterColor(normalizedPattern, i);
-            float brightness = dot(barColor, vec3(0.299, 0.587, 0.114)); // Better brightness calculation
+            float brightness = dot(barColor, vec3(0.299, 0.587, 0.114));
             
             // Take the brighter color when bars overlap
             if (brightness > maxBrightness) {
