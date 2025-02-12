@@ -36,23 +36,23 @@ was developed through conversation with Claude-3-Sonnet.
 ## Controls
 
 ### Background Bars
-- Number of bars: 11 (range: 1-24)
-- Animation speed: 0.53 (range: 0.1-2.0)
-- Bar offset: 0.28 (range: 0.05-0.5)
-- Bar thickness: 0.01 (range: 0.005-0.05)
-- Brightness: 0.2 (range: 0.2-1.0)
-- Sine offset: 0.46 (range: 0.0-1.0)
+- Number of bars (range: 1-24)
+- Animation speed (range: 0.1-2.0)
+- Bar offset (range: 0.05-0.5)
+- Bar thickness (range: 0.005-0.05)
+- Brightness (range: 0.2-1.0)
+- Sine offset (range: 0.0-1.0)
 
 ### Text Bars
-- Number of bars: 5 (range: 1-24)
-- Animation speed: 0.89 (range: 0.1-2.0)
-- Bar offset: 0.2 (range: 0.05-0.5)
-- Bar thickness: 0.02 (range: 0.005-0.05)
-- Brightness: 0.2 (range: 0.2-1.0)
-- Sine offset: 0.4 (range: 0.0-1.0)
+- Number of bars (range: 1-24)
+- Animation speed (range: 0.1-2.0)
+- Bar offset (range: 0.05-0.5)
+- Bar thickness (range: 0.005-0.05)
+- Brightness (range: 0.2-1.0)
+- Sine offset (range: 0.0-1.0)
 
 ### Color Settings
-- Color shift: 1.0 (range: 0.0-1.0)
+- Color shift (range: 0.0-1.0)
 
 ## Technical Details
 
