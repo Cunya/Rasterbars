@@ -68,4 +68,48 @@ was developed through conversation with Claude-3-Sonnet.
 - UV coordinate based rendering for background bars
 - Depth-aware rendering with proper transparency
 
-### Project Structure 
+### Project Structure
+```
+project-root/
+├── src/
+│   ├── main.js           # Main application entry point
+│   ├── shaders/
+│   │   ├── background.frag  # Background raster bars shader
+│   │   ├── background.vert  # Background vertex shader
+│   │   ├── text.frag        # Text raster bars shader
+│   │   └── text.vert        # Text vertex shader
+│   └── style.css         # Basic styling
+├── index.html            # HTML entry point
+├── package.json          # Project dependencies
+└── vite.config.js       # Vite configuration
+```
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/raster-bars-demo.git
+cd raster-bars-demo
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run dev
+```
+
+4. Open your browser and navigate to `http://localhost:5173`
+
+## Usage
+
+1. The demo will start automatically with default parameters
+2. Use the GUI controls in the top-right corner to adjust parameters:
+   - Expand/collapse sections by clicking on the folders
+   - Drag sliders to adjust values
+   - Double-click values to enter them manually
+   - Click the close button to hide the GUI
+
