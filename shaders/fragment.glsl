@@ -41,17 +41,22 @@ void main() {
     vec3 color = vec3(0.0);
     float maxBrightness = -1.0;
     
-    // Use UV coordinates for both text and background
-    float yPos = vUv.y;
+    // Use different coordinate systems for text and background
+    float yPos;
+    if (u_isText) {
+        yPos = vPosition.y + 0.5;
+    } else {
+        yPos = vUv.y;
+    }
     
     for (float i = 0.0; i < 12.0; i++) {
         float phase = (i / 12.0) * 3.14159;
         float yOffset = sin(u_time * 0.5 + phase) * 0.2;
         
-        float barY = 0.5 + yOffset;  // Center the bars
+        float barY = 0.5 + yOffset;
         float distanceFromBar = abs(yPos - barY);
+        float thickness = u_isText ? 0.02 : 0.01;
         
-        float thickness = 0.01;  // Same thickness for both
         if (distanceFromBar < thickness) {
             float normalizedPattern = distanceFromBar / thickness;
             vec3 barColor = getRasterColor(normalizedPattern, i, u_isText);

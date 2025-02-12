@@ -87,17 +87,6 @@ class RasterBarsDemo {
         const textWidth = textBounds.max.x - textBounds.min.x;
         const textHeight = textBounds.max.y - textBounds.min.y;
 
-        // Generate UVs
-        const positions = textGeometry.attributes.position;
-        const uvs = new Float32Array(positions.count * 2);
-        for (let i = 0; i < positions.count; i++) {
-            const x = positions.getX(i);
-            const y = positions.getY(i);
-            uvs[i * 2] = (x - textBounds.min.x) / textWidth;
-            uvs[i * 2 + 1] = (y - textBounds.min.y) / textHeight;
-        }
-        textGeometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-
         // Create material and mesh
         const textMaterial = new THREE.ShaderMaterial({
             uniforms: {
@@ -114,10 +103,10 @@ class RasterBarsDemo {
         });
         this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
         
-        // Position the text in the center
+        // Adjust text position to align with background coordinates
         this.textMesh.position.x = -textWidth / 2;
         this.textMesh.position.y = -textHeight / 2;
-        this.textMesh.position.z = 0.1; // Smaller z-offset
+        this.textMesh.position.z = 0.1;
 
         this.scene.add(this.textMesh);
     }
