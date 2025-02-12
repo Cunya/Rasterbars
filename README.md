@@ -74,15 +74,33 @@ project-root/
 ├── src/
 │   ├── main.js           # Main application entry point
 │   ├── shaders/
-│   │   ├── background.frag  # Background raster bars shader
-│   │   ├── background.vert  # Background vertex shader
-│   │   ├── text.frag        # Text raster bars shader
-│   │   └── text.vert        # Text vertex shader
+│   │   ├── background_vertex.glsl  # Background vertex shader
+│   │   ├── text_vertex.glsl        # Text vertex shader
+│   │   └── fragment.glsl          # Shared fragment shader for both materials
 │   └── style.css         # Basic styling
 ├── index.html            # HTML entry point
 ├── package.json          # Project dependencies
 └── vite.config.js       # Vite configuration
 ```
+
+### Shader Implementation
+
+The demo uses three GLSL shaders to create the raster bar effects:
+
+#### Vertex Shaders
+Both `background_vertex.glsl` and `text_vertex.glsl` handle:
+- UV coordinate passing for texture mapping
+- Position data for world-space calculations
+- Standard vertex transformations
+
+#### Fragment Shader
+The shared `fragment.glsl` implements the raster bar effect with these key features:
+- HSV to RGB color conversion for smooth color transitions
+- Independent control of background and text bars
+- Sine wave-based animation for bar movement
+- Adjustable bar parameters (thickness, brightness, offset)
+- Smooth bar edges using smoothstep
+- Different coordinate spaces for background (UV) and text (world position)
 
 ## Installation
 
