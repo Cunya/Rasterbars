@@ -1,6 +1,14 @@
 uniform float u_time;
 uniform vec2 u_resolution;
 uniform bool u_isText;
+uniform float u_numBars;
+uniform float u_barSpeed;
+uniform float u_barOffset;
+uniform float u_textBarThickness;
+uniform float u_bgBarThickness;
+uniform float u_textBrightness;
+uniform float u_bgBrightness;
+uniform float u_colorShift;
 varying vec2 vUv;
 varying vec3 vPosition;
 
@@ -8,9 +16,9 @@ vec3 getRasterColor(float barPattern, float barIndex, bool isText) {
     float center = 1.0 - barPattern;
     center = pow(center, 1.5);
     
-    float hue = barIndex / 12.0;
+    float hue = barIndex / u_numBars;
     if (isText) {
-        hue = fract(hue + 0.5);
+        hue = fract(hue + u_colorShift);
     }
     
     vec3 outerColor;
@@ -29,10 +37,10 @@ vec3 getRasterColor(float barPattern, float barIndex, bool isText) {
     else outerColor = vec3(1.0, p, q);
     
     if (isText) {
-        outerColor = outerColor * 0.8;
+        outerColor = outerColor * u_textBrightness;
         return mix(outerColor, vec3(1.0), center);
     } else {
-        outerColor = outerColor * 0.4;
+        outerColor = outerColor * u_bgBrightness;
         return mix(outerColor, vec3(0.9), center);
     }
 }
@@ -41,7 +49,6 @@ void main() {
     vec3 color = vec3(0.0);
     float maxBrightness = -1.0;
     
-    // Use different coordinate systems for text and background
     float yPos;
     if (u_isText) {
         yPos = vPosition.y + 0.5;
@@ -49,13 +56,15 @@ void main() {
         yPos = vUv.y;
     }
     
-    for (float i = 0.0; i < 12.0; i++) {
-        float phase = (i / 12.0) * 3.14159;
-        float yOffset = sin(u_time * 0.5 + phase) * 0.2;
+    for (float i = 0.0; i < 24.0; i++) {
+        if (i >= u_numBars) break;
+        
+        float phase = (i / u_numBars) * 3.14159;
+        float yOffset = sin(u_time * u_barSpeed + phase) * u_barOffset;
         
         float barY = 0.5 + yOffset;
         float distanceFromBar = abs(yPos - barY);
-        float thickness = u_isText ? 0.02 : 0.01;
+        float thickness = u_isText ? u_textBarThickness : u_bgBarThickness;
         
         if (distanceFromBar < thickness) {
             float normalizedPattern = distanceFromBar / thickness;
