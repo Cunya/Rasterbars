@@ -86,6 +86,8 @@ project-root/
 
 ## Installation
 
+### Local Development
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/yourusername/raster-bars-demo.git
@@ -103,6 +105,45 @@ npm run dev
 ```
 
 4. Open your browser and navigate to `http://localhost:5173`
+
+### GitHub Pages Deployment
+
+1. Add these scripts to your package.json:
+```bash
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "preview": "vite preview",
+  "deploy": "gh-pages -d dist"
+}
+```
+
+2. Install gh-pages package:
+```bash
+npm install --save-dev gh-pages
+```
+
+3. Add base URL to vite.config.js:
+```js
+export default defineConfig({
+  base: '/raster-bars-demo/', // Replace with your repo name
+  // ... other config options
+})
+```
+
+4. Build and deploy:
+```bash
+npm run build
+npm run deploy
+```
+
+5. On GitHub:
+   - Go to your repository settings
+   - Navigate to "Pages"
+   - Select "gh-pages" branch as source
+   - Save changes
+
+The demo will be available at: `https://yourusername.github.io/raster-bars-demo`
 
 ## Usage
 
