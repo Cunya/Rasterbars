@@ -3,6 +3,11 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import * as dat from 'dat.gui';
 
+// Import shaders directly
+import backgroundVertexShader from './shaders/background_vertex.glsl?raw'
+import textVertexShader from './shaders/text_vertex.glsl?raw'
+import fragmentShader from './shaders/fragment.glsl?raw'
+
 class RasterBarsDemo {
     constructor() {
         this.canvas = document.getElementById('canvas');
@@ -66,18 +71,13 @@ class RasterBarsDemo {
                 u_sineOffset: { value: isText ? this.params.textSineOffset : this.params.bgSineOffset },
                 u_colorShift: { value: this.params.colorShift }
             },
-            vertexShader: await this.loadShader(isText ? 'shaders/text_vertex.glsl' : 'shaders/background_vertex.glsl'),
-            fragmentShader: await this.loadShader('shaders/fragment.glsl'),
+            vertexShader: isText ? textVertexShader : backgroundVertexShader,
+            fragmentShader: fragmentShader,
             transparent: isText,
             side: THREE.DoubleSide,
             depthWrite: isText,
             depthTest: true
         });
-    }
-
-    async loadShader(url) {
-        const response = await fetch(url);
-        return await response.text();
     }
 
     onResize() {

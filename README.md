@@ -143,7 +143,7 @@ npm run deploy
    - Select "gh-pages" branch as source
    - Save changes
 
-The demo will be available at: `https://yourusername.github.io/raster-bars-demo`
+The demo will be available at: `https://yourusername.github.io/Rasterbars`
 
 ## Usage
 
