@@ -29,16 +29,17 @@ class RasterBarsDemo {
         const geometry = new THREE.PlaneGeometry(2, 2);
 
         // Create shader material
-        const material = new THREE.ShaderMaterial({
+        const backgroundMaterial = new THREE.ShaderMaterial({
             uniforms: {
                 u_time: { value: 0 },
-                u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+                u_resolution: { value: new THREE.Vector2() },
+                u_isText: { value: false }
             },
-            vertexShader: await this.loadShader('shaders/vertex.glsl'),
+            vertexShader: await this.loadShader('shaders/background_vertex.glsl'),
             fragmentShader: await this.loadShader('shaders/fragment.glsl')
         });
 
-        this.mesh = new THREE.Mesh(geometry, material);
+        this.mesh = new THREE.Mesh(geometry, backgroundMaterial);
         this.scene.add(this.mesh);
     }
 
@@ -53,6 +54,9 @@ class RasterBarsDemo {
 
         this.renderer.setSize(width, height);
         this.mesh.material.uniforms.u_resolution.value.set(width, height);
+        if (this.textMesh) {
+            this.textMesh.material.uniforms.u_resolution.value.set(width, height);
+        }
     }
 
     async loadText() {
@@ -76,19 +80,44 @@ class RasterBarsDemo {
             bevelSegments: 5
         });
 
-        // Center the text
+        // Compute UVs for the text geometry
+        textGeometry.computeVertexNormals();
         textGeometry.computeBoundingBox();
-        const textWidth = textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x;
-        const textHeight = textGeometry.boundingBox.max.y - textGeometry.boundingBox.min.y;
-        
+        const textBounds = textGeometry.boundingBox;
+        const textWidth = textBounds.max.x - textBounds.min.x;
+        const textHeight = textBounds.max.y - textBounds.min.y;
+
+        // Generate UVs
+        const positions = textGeometry.attributes.position;
+        const uvs = new Float32Array(positions.count * 2);
+        for (let i = 0; i < positions.count; i++) {
+            const x = positions.getX(i);
+            const y = positions.getY(i);
+            uvs[i * 2] = (x - textBounds.min.x) / textWidth;
+            uvs[i * 2 + 1] = (y - textBounds.min.y) / textHeight;
+        }
+        textGeometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+
         // Create material and mesh
-        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const textMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                u_time: { value: 0 },
+                u_resolution: { value: new THREE.Vector2() },
+                u_isText: { value: true }
+            },
+            vertexShader: await this.loadShader('shaders/text_vertex.glsl'),
+            fragmentShader: await this.loadShader('shaders/fragment.glsl'),
+            transparent: true,
+            side: THREE.DoubleSide,
+            depthWrite: true,
+            depthTest: true
+        });
         this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
         
         // Position the text in the center
         this.textMesh.position.x = -textWidth / 2;
         this.textMesh.position.y = -textHeight / 2;
-        this.textMesh.position.z = 0.5; // Slightly in front of the raster bars
+        this.textMesh.position.z = 0.1; // Smaller z-offset
 
         this.scene.add(this.textMesh);
     }
@@ -96,12 +125,11 @@ class RasterBarsDemo {
     animate() {
         requestAnimationFrame(() => this.animate());
         
-        // Update time uniform
-        this.mesh.material.uniforms.u_time.value = performance.now() * 0.001;
-        
-        // Optional: add some subtle text animation
+        const time = performance.now() * 0.001;
+        // Update time uniform for both materials
+        this.mesh.material.uniforms.u_time.value = time;
         if (this.textMesh) {
-//            this.textMesh.rotation.y = Math.sin(performance.now() * 0.001) * 0.1;
+            this.textMesh.material.uniforms.u_time.value = time;
         }
         
         this.renderer.render(this.scene, this.camera);
