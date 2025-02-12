@@ -7,14 +7,22 @@ class RasterBarsDemo {
     constructor() {
         this.canvas = document.getElementById('canvas');
         this.params = {
-            numBars: 12,
-            barSpeed: 0.5,
-            barOffset: 0.2,
-            textBarThickness: 0.02,
+            // Background parameters
+            bgNumBars: 11,
+            bgBarSpeed: 0.53,
+            bgBarOffset: 0.28,
             bgBarThickness: 0.01,
-            textBrightness: 0.8,
-            bgBrightness: 0.4,
-            colorShift: 0.5
+            bgBrightness: 0.2,
+            bgSineOffset: 0.46,
+            // Text parameters
+            textNumBars: 5,
+            textBarSpeed: 0.89,
+            textBarOffset: 0.2,
+            textBarThickness: 0.02,
+            textBrightness: 0.2,
+            textSineOffset: 0.4,
+            // Shared parameters
+            colorShift: 1.0
         };
         
         this.setup();
@@ -45,23 +53,20 @@ class RasterBarsDemo {
     }
 
     async createMaterial(isText) {
-        const response = await fetch(isText ? 'shaders/text_vertex.glsl' : 'shaders/background_vertex.glsl');
-        const vertexShader = await response.text();
         return new THREE.ShaderMaterial({
             uniforms: {
                 u_time: { value: 0 },
                 u_resolution: { value: new THREE.Vector2() },
                 u_isText: { value: isText },
-                u_numBars: { value: this.params.numBars },
-                u_barSpeed: { value: this.params.barSpeed },
-                u_barOffset: { value: this.params.barOffset },
-                u_textBarThickness: { value: this.params.textBarThickness },
-                u_bgBarThickness: { value: this.params.bgBarThickness },
-                u_textBrightness: { value: this.params.textBrightness },
-                u_bgBrightness: { value: this.params.bgBrightness },
+                u_numBars: { value: isText ? this.params.textNumBars : this.params.bgNumBars },
+                u_barSpeed: { value: isText ? this.params.textBarSpeed : this.params.bgBarSpeed },
+                u_barOffset: { value: isText ? this.params.textBarOffset : this.params.bgBarOffset },
+                u_barThickness: { value: isText ? this.params.textBarThickness : this.params.bgBarThickness },
+                u_brightness: { value: isText ? this.params.textBrightness : this.params.bgBrightness },
+                u_sineOffset: { value: isText ? this.params.textSineOffset : this.params.bgSineOffset },
                 u_colorShift: { value: this.params.colorShift }
             },
-            vertexShader: vertexShader,
+            vertexShader: await this.loadShader(isText ? 'shaders/text_vertex.glsl' : 'shaders/background_vertex.glsl'),
             fragmentShader: await this.loadShader('shaders/fragment.glsl'),
             transparent: isText,
             side: THREE.DoubleSide,
@@ -129,46 +134,52 @@ class RasterBarsDemo {
     setupGUI() {
         const gui = new dat.GUI();
         
-        // Bar controls
-        const barsFolder = gui.addFolder('Bars');
-        barsFolder.add(this.params, 'numBars', 1, 24, 1).onChange(() => this.updateUniforms());
-        barsFolder.add(this.params, 'barSpeed', 0.1, 2.0).onChange(() => this.updateUniforms());
-        barsFolder.add(this.params, 'barOffset', 0.05, 0.5).onChange(() => this.updateUniforms());
-        barsFolder.open();
+        // Background controls
+        const bgFolder = gui.addFolder('Background Bars');
+        bgFolder.add(this.params, 'bgNumBars', 1, 24, 1).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgBarSpeed', 0.1, 2.0).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgBarOffset', 0.05, 0.5).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgBrightness', 0.2, 1.0).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgSineOffset', 0.0, 1.0).onChange(() => this.updateUniforms());
+        bgFolder.open();
 
-        // Thickness controls
-        const thicknessFolder = gui.addFolder('Thickness');
-        thicknessFolder.add(this.params, 'textBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
-        thicknessFolder.add(this.params, 'bgBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
-        thicknessFolder.open();
+        // Text controls
+        const textFolder = gui.addFolder('Text Bars');
+        textFolder.add(this.params, 'textNumBars', 1, 24, 1).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textBarSpeed', 0.1, 2.0).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textBarOffset', 0.05, 0.5).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textBrightness', 0.2, 1.0).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textSineOffset', 0.0, 1.0).onChange(() => this.updateUniforms());
+        textFolder.open();
 
         // Color controls
-        const colorFolder = gui.addFolder('Colors');
-        colorFolder.add(this.params, 'textBrightness', 0.2, 1.0).onChange(() => this.updateUniforms());
-        colorFolder.add(this.params, 'bgBrightness', 0.2, 1.0).onChange(() => this.updateUniforms());
+        const colorFolder = gui.addFolder('Color Settings');
         colorFolder.add(this.params, 'colorShift', 0.0, 1.0).onChange(() => this.updateUniforms());
         colorFolder.open();
     }
 
     updateUniforms() {
-        const uniforms = {
-            u_numBars: { value: this.params.numBars },
-            u_barSpeed: { value: this.params.barSpeed },
-            u_barOffset: { value: this.params.barOffset },
-            u_textBarThickness: { value: this.params.textBarThickness },
-            u_bgBarThickness: { value: this.params.bgBarThickness },
-            u_textBrightness: { value: this.params.textBrightness },
-            u_bgBrightness: { value: this.params.bgBrightness },
-            u_colorShift: { value: this.params.colorShift }
-        };
+        // Update background uniforms
+        this.mesh.material.uniforms.u_numBars.value = this.params.bgNumBars;
+        this.mesh.material.uniforms.u_barSpeed.value = this.params.bgBarSpeed;
+        this.mesh.material.uniforms.u_barOffset.value = this.params.bgBarOffset;
+        this.mesh.material.uniforms.u_barThickness.value = this.params.bgBarThickness;
+        this.mesh.material.uniforms.u_brightness.value = this.params.bgBrightness;
+        this.mesh.material.uniforms.u_sineOffset.value = this.params.bgSineOffset;
+        this.mesh.material.uniforms.u_colorShift.value = this.params.colorShift;
 
-        // Update both materials
-        Object.entries(uniforms).forEach(([key, value]) => {
-            this.mesh.material.uniforms[key] = value;
-            if (this.textMesh) {
-                this.textMesh.material.uniforms[key] = value;
-            }
-        });
+        // Update text uniforms if text mesh exists
+        if (this.textMesh) {
+            this.textMesh.material.uniforms.u_numBars.value = this.params.textNumBars;
+            this.textMesh.material.uniforms.u_barSpeed.value = this.params.textBarSpeed;
+            this.textMesh.material.uniforms.u_barOffset.value = this.params.textBarOffset;
+            this.textMesh.material.uniforms.u_barThickness.value = this.params.textBarThickness;
+            this.textMesh.material.uniforms.u_brightness.value = this.params.textBrightness;
+            this.textMesh.material.uniforms.u_sineOffset.value = this.params.textSineOffset;
+            this.textMesh.material.uniforms.u_colorShift.value = this.params.colorShift;
+        }
     }
 
     animate() {

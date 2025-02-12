@@ -4,10 +4,9 @@ uniform bool u_isText;
 uniform float u_numBars;
 uniform float u_barSpeed;
 uniform float u_barOffset;
-uniform float u_textBarThickness;
-uniform float u_bgBarThickness;
-uniform float u_textBrightness;
-uniform float u_bgBrightness;
+uniform float u_barThickness;
+uniform float u_brightness;
+uniform float u_sineOffset;
 uniform float u_colorShift;
 varying vec2 vUv;
 varying vec3 vPosition;
@@ -36,13 +35,8 @@ vec3 getRasterColor(float barPattern, float barIndex, bool isText) {
     else if (i == 4.0) outerColor = vec3(t, p, 1.0);
     else outerColor = vec3(1.0, p, q);
     
-    if (isText) {
-        outerColor = outerColor * u_textBrightness;
-        return mix(outerColor, vec3(1.0), center);
-    } else {
-        outerColor = outerColor * u_bgBrightness;
-        return mix(outerColor, vec3(0.9), center);
-    }
+    outerColor = outerColor * u_brightness;
+    return mix(outerColor, vec3(1.0), center);
 }
 
 void main() {
@@ -60,14 +54,14 @@ void main() {
         if (i >= u_numBars) break;
         
         float phase = (i / u_numBars) * 3.14159;
-        float yOffset = sin(u_time * u_barSpeed + phase) * u_barOffset;
+        float sinePhase = phase * u_sineOffset;
+        float yOffset = sin(u_time * u_barSpeed + sinePhase) * u_barOffset;
         
         float barY = 0.5 + yOffset;
         float distanceFromBar = abs(yPos - barY);
-        float thickness = u_isText ? u_textBarThickness : u_bgBarThickness;
         
-        if (distanceFromBar < thickness) {
-            float normalizedPattern = distanceFromBar / thickness;
+        if (distanceFromBar < u_barThickness) {
+            float normalizedPattern = distanceFromBar / u_barThickness;
             vec3 barColor = getRasterColor(normalizedPattern, i, u_isText);
             float brightness = dot(barColor, vec3(0.299, 0.587, 0.114));
             
