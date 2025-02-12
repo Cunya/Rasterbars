@@ -5,9 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raster Bars Demo</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .github-link {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            color: white;
+            text-decoration: none;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 14px;
+            padding: 5px;
+            z-index: 1000;
+        }
+        .github-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <a href="https://github.com/Cunya/Rasterbars" class="github-link">GitHub</a>
     <script type="module" src="/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
 </body>

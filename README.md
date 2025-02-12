@@ -2,7 +2,11 @@
 
 A Three.js demo that creates a classic demoscene-style raster bars effect with a centered "Symbio" logo. The demo features independently controlled raster bars for both background and text, with real-time parameter adjustment.
 
+**[View Live Demo](https://cunya.github.io/Rasterbars/)**
+
 This project is part of a series of experiments in LLM-assisted code generation, developed entirely through conversation with Claude (Anthropic's Claude-3-Sonnet) using the Cursor editor.
+
+This project was inspired by [Cunya's Rasterbars demo](https://github.com/Cunya/Rasterbars).
 
 ![Demo Preview](preview.png)
 

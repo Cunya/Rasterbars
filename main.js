@@ -132,7 +132,50 @@ class RasterBarsDemo {
     }
 
     setupGUI() {
-        const gui = new dat.GUI();
+        const gui = new dat.GUI({ autoPlace: false });
+        gui.domElement.style.position = 'absolute';
+        gui.domElement.style.top = '30px';
+        gui.domElement.style.right = '2px';
+        document.body.appendChild(gui.domElement);
+        
+        // Add custom close button
+        const closeButton = document.createElement('div');
+        closeButton.className = 'custom-close-button';
+        closeButton.style.cssText = `
+            position: absolute;
+            right: 70px;
+            top: 10px;
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 1001;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 14px;
+        `;
+        closeButton.textContent = 'Open Controls';
+        document.body.appendChild(closeButton);
+
+        // Hide GUI initially
+        gui.domElement.style.display = 'none';
+
+        // Hide the default close button after a short delay
+        setTimeout(() => {
+            const defaultCloseButton = gui.domElement.querySelector('.close-button');
+            if (defaultCloseButton) {
+                defaultCloseButton.style.display = 'none';
+            }
+        }, 100);
+
+        closeButton.addEventListener('click', () => {
+            if (gui.domElement.style.display === 'none') {
+                gui.domElement.style.display = 'block';
+                closeButton.textContent = 'Close Controls';
+            } else {
+                gui.domElement.style.display = 'none';
+                closeButton.textContent = 'Open Controls';
+            }
+        });
         
         // Background controls
         const bgFolder = gui.addFolder('Background Bars');
