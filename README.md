@@ -6,8 +6,6 @@ A Three.js demo that creates a classic demoscene-style raster bars effect with a
 
 This project is part of a series of experiments in LLM-assisted code generation, developed entirely through conversation with Claude (Anthropic's Claude-3-Sonnet) using the Cursor editor.
 
-This project was inspired by [Cunya's Rasterbars demo](https://github.com/Cunya/Rasterbars).
-
 ![Demo Preview](preview.png)
 
 ## Features
