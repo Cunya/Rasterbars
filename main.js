@@ -37,7 +37,7 @@ class RasterBarsDemo {
         this.animate();
     }
 
-    async setup() {
+    setup() {
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -50,14 +50,14 @@ class RasterBarsDemo {
         window.addEventListener('resize', () => this.onResize());
     }
 
-    async createScene() {
+    createScene() {
         const geometry = new THREE.PlaneGeometry(2, 2);
-        const backgroundMaterial = await this.createMaterial(false);
+        const backgroundMaterial = this.createMaterial(false);
         this.mesh = new THREE.Mesh(geometry, backgroundMaterial);
         this.scene.add(this.mesh);
     }
 
-    async createMaterial(isText) {
+    createMaterial(isText) {
         return new THREE.ShaderMaterial({
             uniforms: {
                 u_time: { value: 0 },
@@ -120,7 +120,7 @@ class RasterBarsDemo {
         const textHeight = textBounds.max.y - textBounds.min.y;
 
         // Create material and mesh
-        const textMaterial = await this.createMaterial(true);
+        const textMaterial = this.createMaterial(true);
         this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
         
         // Adjust text position to align with background coordinates
