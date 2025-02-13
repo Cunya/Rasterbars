@@ -13,7 +13,9 @@ This project is part of a series of experiments in LLM-assisted code generation,
 - Independent raster bar controls for background and text
 - Real-time parameter adjustment via GUI controls
 - Smooth sine wave animations with configurable offsets
-- Gradient coloring with adjustable brightness
+- Gradient coloring with adjustable brightness and contrast
+- Horizontal wave effects for dynamic movement
+- Choice between brightness-based or index-based bar overlapping
 - Centered 3D text with complementary colors
 - Responsive design that adapts to window size
 
@@ -36,23 +38,33 @@ was developed through conversation with Claude-3-Sonnet.
 ## Controls
 
 ### Background Bars
-- Number of bars (range: 1-24)
-- Animation speed (range: 0.1-2.0)
-- Bar offset (range: 0.05-0.5)
-- Bar thickness (range: 0.005-0.05)
-- Brightness (range: 0.2-1.0)
-- Sine offset (range: 0.0-1.0)
+- Number of bars (default: 30, range: 1-96)
+- Animation speed (default: 0.43, range: 0.1-2.0)
+- Bar offset (default: 0.46, range: 0.05-0.5)
+- Bar thickness (default: 0.007, range: 0.005-0.05)
+- Brightness (default: 0.791, range: 0.01-1.0)
+- Contrast (default: 1.0, range: 0.1-3.0)
+- Color shift (default: 1.0, range: 0.0-1.0)
+- Sine offset (default: 0.46, range: 0.0-1.0)
+- Wave Amount (default: 0.01, range: 0.0-1.2)
+- Wave Speed (default: 8.0, range: 0.1-8.0)
+- Wave Phase (default: 6.0, range: 0.0-6.28)
+- Brightness Based Overlapping (default: false)
 
 ### Text Bars
-- Number of bars (range: 1-24)
-- Animation speed (range: 0.1-2.0)
-- Bar offset (range: 0.05-0.5)
-- Bar thickness (range: 0.005-0.05)
-- Brightness (range: 0.2-1.0)
-- Sine offset (range: 0.0-1.0)
-
-### Color Settings
-- Color shift (range: 0.0-1.0)
+- Number of bars (default: 31, range: 1-96)
+- Animation speed (default: 0.89, range: 0.1-2.0)
+- Bar offset (default: 0.2, range: 0.05-0.5)
+- Bar thickness (default: 0.025, range: 0.005-0.05)
+- Brightness (default: 0.889, range: 0.01-1.0)
+- Contrast (default: 1.1, range: 0.1-3.0)
+- Color shift (default: 1.0, range: 0.0-1.0)
+- Sine offset (default: 1.0, range: 0.0-1.0)
+- Wave Amount (default: 0.07, range: 0.0-1.2)
+- Wave Speed (default: 0.5, range: 0.1-8.0)
+- Wave Phase (default: 6.0, range: 0.0-6.28)
+- Solid Black Background (default: true)
+- Brightness Based Overlapping (default: false)
 
 ## Technical Details
 
@@ -69,6 +81,8 @@ was developed through conversation with Claude-3-Sonnet.
 - World position based rendering for text bars
 - UV coordinate based rendering for background bars
 - Depth-aware rendering with proper transparency
+- Choice between brightness-based or index-based bar overlapping
+- Horizontal wave effects for dynamic movement
 
 ### Project Structure
 ```
