@@ -56,7 +56,7 @@ void main() {
     
     float yPos = u_isText ? (pos.y + 0.5) : pos.y;
     
-    for (float i = 0.0; i < 24.0; i++) {
+    for (float i = 0.0; i < 96.0; i++) {
         if (i >= u_numBars) break;
         
         float phase = (i / u_numBars) * 3.14159;

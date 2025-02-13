@@ -198,7 +198,7 @@ class RasterBarsDemo {
         
         // Background controls
         const bgFolder = gui.addFolder('Background Bars');
-        bgFolder.add(this.params, 'bgNumBars', 1, 24, 1).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgNumBars', 1, 96, 1).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgBarSpeed', 0.1, 2.0).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgBarOffset', 0.05, 0.5).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
@@ -211,7 +211,7 @@ class RasterBarsDemo {
 
         // Text controls
         const textFolder = gui.addFolder('Text Bars');
-        textFolder.add(this.params, 'textNumBars', 1, 24, 1).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textNumBars', 1, 96, 1).onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textBarSpeed', 0.1, 2.0).onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textBarOffset', 0.05, 0.5).onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
