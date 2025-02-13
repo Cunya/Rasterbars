@@ -55,6 +55,7 @@ class RasterBarsDemo {
         this.currentPresetIndex = 0;
         this.isTransitioning = false;
         this.cyclePresets = true;
+        this.animateValues = false;
         this.lastTransitionTime = 0;
         this.cyclePeriod = 30; // Default cycle period in seconds
         this.transitionDuration = 15000; // 15 second transition
@@ -73,7 +74,7 @@ class RasterBarsDemo {
         if (this.cyclePresets && this.presets.length > 1) {
             setTimeout(() => {
                 this.loadPreset(1); // Start with the second preset
-            }, 1000); // Wait 1 second after initialization
+            }, this.cycleWaitDuration); // Use cycleWaitDuration instead of 1000ms
         }
     }
 
@@ -321,14 +322,16 @@ class RasterBarsDemo {
             const progress = Math.min(deltaTime / this.transitionDuration, 1);
             const targetParams = this.presets[this.currentPresetIndex].params;
 
-            // Interpolate parameters
+            // Interpolate parameters based on animation setting
             for (const key in this.params) {
                 if (typeof this.params[key] === 'number') {
-                    this.params[key] = this.transitionStartParams[key] + 
-                        (targetParams[key] - this.transitionStartParams[key]) * progress;
+                    this.params[key] = this.animateValues ? 
+                        this.transitionStartParams[key] + (targetParams[key] - this.transitionStartParams[key]) * progress :
+                        targetParams[key];
                 } else if (typeof this.params[key] === 'boolean') {
-                    // For boolean values, switch at 50% of the transition
-                    this.params[key] = progress > 0.5 ? targetParams[key] : this.transitionStartParams[key];
+                    this.params[key] = this.animateValues ?
+                        (progress > 0.5 ? targetParams[key] : this.transitionStartParams[key]) :
+                        targetParams[key];
                 }
             }
 
@@ -585,6 +588,18 @@ class RasterBarsDemo {
                     this.loadPreset(nextIndex);
                 }
             });
+        
+        presetFolder.add(this, 'animateValues')
+            .name('Animate Values')
+            .onChange(() => {
+                // If we're currently transitioning, immediately apply target values if animation is disabled
+                if (this.isTransitioning && !this.animateValues) {
+                    const targetParams = this.presets[this.currentPresetIndex].params;
+                    Object.assign(this.params, targetParams);
+                    this.updateUniforms();
+                }
+            });
+        
         presetFolder.add(this, 'cyclePeriod', 5, 120, 1)
             .name('Cycle Period (seconds)')
             .onChange(value => this.setCyclePeriod(value));

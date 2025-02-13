@@ -1,23 +1,76 @@
 # Raster Bars Demo
 
-A Three.js demo that creates a classic demoscene-style raster bars effect with a centered "Symbio" logo. The demo features independently controlled raster bars for both background and text, with real-time parameter adjustment.
+An interactive WebGL demo featuring animated raster bars with customizable parameters and preset management.
+
+## Features
+
+- Customizable raster bar animations for both background and text
+- Real-time parameter adjustment through GUI controls
+- Preset system with:
+  - Auto-cycling between presets with smooth transitions
+  - Adjustable cycle period (5-120 seconds)
+  - 15-second transitions between presets
+  - Save/load/delete functionality
+  - Built-in preset collection
+  - Randomize function for parameter exploration
+- Persistent storage of custom presets
+- Color saturation controls
+- Wave effects with adjustable amplitude, frequency, and phase
+- Brightness-based overlapping option
+
+## Controls
+
+### Background & Text Controls
+- Number of bars
+- Bar speed
+- Bar offset
+- Bar thickness
+- Brightness
+- Contrast
+- Saturation
+- Color shift
+- Sine offset
+- Wave Amount (amplitude)
+- Wave Speed (frequency)
+- Wave Phase
+- Brightness Based Overlapping
+- Solid Black Background (text only)
+
+### Preset Management
+- Auto Cycle Presets: Toggle automatic cycling between presets
+- Cycle Period: Adjust the time between preset changes (5-120 seconds)
+- Randomize Values: Generate random parameter combinations
+- Save Current as Preset: Save current settings as a new preset
+- Individual preset controls:
+  - Load: Apply the preset
+  - Delete: Remove the preset
+
+## Built-in Presets
+
+1. Default: Initial parameter configuration
+2. Neon Waves: High contrast, vibrant colors with wave motion
+3. Soft Glow: Subtle, smooth transitions with gentle wave effects
+
+## Usage
+
+1. Open the controls panel using the "Open Controls" button
+2. Adjust parameters in real-time using the GUI controls
+3. Save interesting combinations as presets
+4. Enable auto-cycling to automatically transition between presets
+5. Use the randomize function to explore new combinations
+
+## Technical Details
+
+- Built with Three.js and dat.gui
+- Uses WebGL shaders for efficient rendering
+- Smooth parameter interpolation during transitions
+- Local storage for preset persistence
 
 **[View Live Demo](https://cunya.github.io/Rasterbars/)**
 
 This project is part of a series of experiments in LLM-assisted code generation, developed entirely through conversation with Claude (Anthropic's Claude-3-Sonnet) using the Cursor editor.
 
 ![Demo Preview](preview.png)
-
-## Features
-
-- Independent raster bar controls for background and text
-- Real-time parameter adjustment via GUI controls
-- Smooth sine wave animations with configurable offsets
-- Gradient coloring with adjustable brightness and contrast
-- Horizontal wave effects for dynamic movement
-- Choice between brightness-based or index-based bar overlapping
-- Centered 3D text with complementary colors
-- Responsive design that adapts to window size
 
 ## Development Process
 
@@ -34,37 +87,6 @@ The entire codebase, including:
 - GUI controls
 - Parameter optimization
 was developed through conversation with Claude-3-Sonnet.
-
-## Controls
-
-### Background Bars
-- Number of bars (default: 30, range: 1-96)
-- Animation speed (default: 0.43, range: 0.1-2.0)
-- Bar offset (default: 0.46, range: 0.05-0.5)
-- Bar thickness (default: 0.007, range: 0.005-0.05)
-- Brightness (default: 0.791, range: 0.01-1.0)
-- Contrast (default: 1.0, range: 0.1-3.0)
-- Color shift (default: 1.0, range: 0.0-1.0)
-- Sine offset (default: 0.46, range: 0.0-1.0)
-- Wave Amount (default: 0.01, range: 0.0-1.2)
-- Wave Speed (default: 8.0, range: 0.1-8.0)
-- Wave Phase (default: 6.0, range: 0.0-6.28)
-- Brightness Based Overlapping (default: false)
-
-### Text Bars
-- Number of bars (default: 31, range: 1-96)
-- Animation speed (default: 0.89, range: 0.1-2.0)
-- Bar offset (default: 0.2, range: 0.05-0.5)
-- Bar thickness (default: 0.025, range: 0.005-0.05)
-- Brightness (default: 0.889, range: 0.01-1.0)
-- Contrast (default: 1.1, range: 0.1-3.0)
-- Color shift (default: 1.0, range: 0.0-1.0)
-- Sine offset (default: 1.0, range: 0.0-1.0)
-- Wave Amount (default: 0.07, range: 0.0-1.2)
-- Wave Speed (default: 0.5, range: 0.1-8.0)
-- Wave Phase (default: 6.0, range: 0.0-6.28)
-- Solid Black Background (default: true)
-- Brightness Based Overlapping (default: false)
 
 ## Technical Details
 
