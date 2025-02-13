@@ -10,6 +10,8 @@ uniform float u_sineOffset;
 uniform float u_colorShift;
 uniform float u_xWaveAmplitude;
 uniform float u_xWaveFrequency;
+uniform float u_textXWaveAmplitude;
+uniform float u_textXWaveFrequency;
 
 varying vec2 vUv;
 varying vec3 vPosition;
@@ -46,9 +48,11 @@ void main() {
     vec2 pos = u_isText ? vPosition.xy : vUv;
     float time = u_time * u_barSpeed;
     
-    // Add horizontal wave
-    float horizontalOffset = sin(pos.x * 3.14159 * 2.0) * u_xWaveAmplitude;
-    float verticalWave = sin(time * u_xWaveFrequency) * u_xWaveAmplitude;
+    float waveAmplitude = u_isText ? u_textXWaveAmplitude : u_xWaveAmplitude;
+    float waveFrequency = u_isText ? u_textXWaveFrequency : u_xWaveFrequency;
+    
+    float horizontalOffset = sin(pos.x * 3.14159 * 2.0) * waveAmplitude;
+    float verticalWave = sin(time * waveFrequency) * waveAmplitude;
     float finalOffset = horizontalOffset * verticalWave;
     
     vec3 color = vec3(0.0);
