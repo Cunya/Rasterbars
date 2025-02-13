@@ -63,7 +63,7 @@ void main() {
     float time = u_time * u_barSpeed;
     
     vec3 color = vec3(0.0);
-    float maxBrightness = -1.0;
+    float maxIndex = -1.0;  // Track the highest bar index instead of brightness
     
     float yPos = u_isText ? (pos.y + 0.5) : pos.y;
     
@@ -87,17 +87,17 @@ void main() {
         if (distanceFromBar < u_barThickness) {
             float normalizedPattern = distanceFromBar / u_barThickness;
             vec3 barColor = getRasterColor(normalizedPattern, i, u_isText);
-            float brightness = dot(barColor, vec3(0.299, 0.587, 0.114));
             
-            if (brightness > maxBrightness) {
+            // Use bar index for overlap priority
+            if (i > maxIndex) {
                 color = barColor;
-                maxBrightness = brightness;
+                maxIndex = i;
             }
         }
     }
     
     if (u_isText) {
-        float alpha = maxBrightness > -1.0 ? 1.0 : (u_textSolidBlack ? 1.0 : 0.0);
+        float alpha = maxIndex > -1.0 ? 1.0 : (u_textSolidBlack ? 1.0 : 0.0);
         gl_FragColor = vec4(color, alpha);
     } else {
         gl_FragColor = vec4(color, 1.0);
