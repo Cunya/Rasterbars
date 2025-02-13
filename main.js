@@ -17,17 +17,19 @@ class RasterBarsDemo {
             bgBarSpeed: 0.53,
             bgBarOffset: 0.28,
             bgBarThickness: 0.01,
-            bgBrightness: 0.2,
+            bgBrightness: 0.01,
+            bgContrast: 1.0,
             bgSineOffset: 0.46,
+            bgColorShift: 0.0,
             // Text parameters
             textNumBars: 5,
             textBarSpeed: 0.89,
             textBarOffset: 0.2,
             textBarThickness: 0.02,
-            textBrightness: 0.2,
+            textBrightness: 0.01,
+            textContrast: 1.0,
             textSineOffset: 0.4,
-            // Shared parameters
-            colorShift: 1.0,
+            textColorShift: 1.0,
             // Add new parameters for x-wave
             xWaveAmplitude: 0.1,
             xWaveFrequency: 0.5,
@@ -81,14 +83,15 @@ class RasterBarsDemo {
                 u_barThickness: { value: isText ? this.params.textBarThickness : this.params.bgBarThickness },
                 u_brightness: { value: isText ? this.params.textBrightness : this.params.bgBrightness },
                 u_sineOffset: { value: isText ? this.params.textSineOffset : this.params.bgSineOffset },
-                u_colorShift: { value: this.params.colorShift },
+                u_colorShift: { value: isText ? this.params.textColorShift : this.params.bgColorShift },
                 u_xWaveAmplitude: { value: this.params.bgXWaveAmplitude },
                 u_xWaveFrequency: { value: this.params.bgXWaveFrequency },
                 u_xWaveOffset: { value: this.params.bgXWaveOffset },
                 u_textXWaveAmplitude: { value: this.params.textXWaveAmplitude },
                 u_textXWaveFrequency: { value: this.params.textXWaveFrequency },
                 u_textXWaveOffset: { value: this.params.textXWaveOffset },
-                u_textSolidBlack: { value: this.params.textSolidBlack }
+                u_textSolidBlack: { value: this.params.textSolidBlack },
+                u_contrast: { value: isText ? this.params.textContrast : this.params.bgContrast }
             },
             vertexShader: isText ? textVertexShader : backgroundVertexShader,
             fragmentShader: fragmentShader,
@@ -202,7 +205,9 @@ class RasterBarsDemo {
         bgFolder.add(this.params, 'bgBarSpeed', 0.1, 2.0).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgBarOffset', 0.05, 0.5).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
-        bgFolder.add(this.params, 'bgBrightness', 0.2, 1.0).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgBrightness', 0.01, 1.0).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgContrast', 0.1, 3.0).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgColorShift', 0.0, 1.0).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgSineOffset', 0.0, 1.0).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgXWaveAmplitude', 0.0, 1.2).name('Wave Amount').onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgXWaveFrequency', 0.1, 8.0).name('Wave Speed').onChange(() => this.updateUniforms());
@@ -215,18 +220,15 @@ class RasterBarsDemo {
         textFolder.add(this.params, 'textBarSpeed', 0.1, 2.0).onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textBarOffset', 0.05, 0.5).onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
-        textFolder.add(this.params, 'textBrightness', 0.2, 1.0).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textBrightness', 0.01, 1.0).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textContrast', 0.1, 3.0).onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textColorShift', 0.0, 1.0).onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textSineOffset', 0.0, 1.0).onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textXWaveAmplitude', 0.0, 1.2).name('Wave Amount').onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textXWaveFrequency', 0.1, 8.0).name('Wave Speed').onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textXWaveOffset', 0.0, 6.28).name('Wave Phase').onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textSolidBlack').name('Solid Black Background').onChange(() => this.updateUniforms());
         textFolder.open();
-
-        // Color controls
-        const colorFolder = gui.addFolder('Color Settings');
-        colorFolder.add(this.params, 'colorShift', 0.0, 1.0).onChange(() => this.updateUniforms());
-        colorFolder.open();
     }
 
     updateUniforms() {
@@ -237,7 +239,7 @@ class RasterBarsDemo {
         this.mesh.material.uniforms.u_barThickness.value = this.params.bgBarThickness;
         this.mesh.material.uniforms.u_brightness.value = this.params.bgBrightness;
         this.mesh.material.uniforms.u_sineOffset.value = this.params.bgSineOffset;
-        this.mesh.material.uniforms.u_colorShift.value = this.params.colorShift;
+        this.mesh.material.uniforms.u_colorShift.value = this.params.bgColorShift;
         this.mesh.material.uniforms.u_xWaveAmplitude.value = this.params.bgXWaveAmplitude;
         this.mesh.material.uniforms.u_xWaveFrequency.value = this.params.bgXWaveFrequency;
         this.mesh.material.uniforms.u_xWaveOffset.value = this.params.bgXWaveOffset;
@@ -245,6 +247,7 @@ class RasterBarsDemo {
         this.mesh.material.uniforms.u_textXWaveFrequency.value = this.params.textXWaveFrequency;
         this.mesh.material.uniforms.u_textXWaveOffset.value = this.params.textXWaveOffset;
         this.mesh.material.uniforms.u_textSolidBlack.value = this.params.textSolidBlack;
+        this.mesh.material.uniforms.u_contrast.value = this.params.bgContrast;
 
         // Update text uniforms if text mesh exists
         if (this.textMesh) {
@@ -254,7 +257,7 @@ class RasterBarsDemo {
             this.textMesh.material.uniforms.u_barThickness.value = this.params.textBarThickness;
             this.textMesh.material.uniforms.u_brightness.value = this.params.textBrightness;
             this.textMesh.material.uniforms.u_sineOffset.value = this.params.textSineOffset;
-            this.textMesh.material.uniforms.u_colorShift.value = this.params.colorShift;
+            this.textMesh.material.uniforms.u_colorShift.value = this.params.textColorShift;
             this.textMesh.material.uniforms.u_xWaveAmplitude.value = this.params.bgXWaveAmplitude;
             this.textMesh.material.uniforms.u_xWaveFrequency.value = this.params.bgXWaveFrequency;
             this.textMesh.material.uniforms.u_xWaveOffset.value = this.params.bgXWaveOffset;
@@ -262,6 +265,7 @@ class RasterBarsDemo {
             this.textMesh.material.uniforms.u_textXWaveFrequency.value = this.params.textXWaveFrequency;
             this.textMesh.material.uniforms.u_textXWaveOffset.value = this.params.textXWaveOffset;
             this.textMesh.material.uniforms.u_textSolidBlack.value = this.params.textSolidBlack;
+            this.textMesh.material.uniforms.u_contrast.value = this.params.textContrast;
         }
     }
 

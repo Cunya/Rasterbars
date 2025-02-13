@@ -15,6 +15,7 @@ uniform float u_textXWaveAmplitude;
 uniform float u_textXWaveFrequency;
 uniform float u_textXWaveOffset;
 uniform bool u_textSolidBlack;
+uniform float u_contrast;
 
 varying vec2 vUv;
 varying vec3 vPosition;
@@ -24,9 +25,8 @@ vec3 getRasterColor(float barPattern, float barIndex, bool isText) {
     center = pow(center, 1.5);
     
     float hue = barIndex / u_numBars;
-    if (isText) {
-        hue = fract(hue + u_colorShift);
-    }
+    // Apply color shift for both text and background
+    hue = fract(hue + u_colorShift);
     
     vec3 outerColor;
     float h = hue * 6.0;
@@ -43,8 +43,19 @@ vec3 getRasterColor(float barPattern, float barIndex, bool isText) {
     else if (i == 4.0) outerColor = vec3(t, p, 1.0);
     else outerColor = vec3(1.0, p, q);
     
-    outerColor = outerColor * u_brightness;
-    return mix(outerColor, vec3(1.0), center);
+    float brightness = isText ? u_brightness : u_brightness;
+    float contrast = isText ? u_contrast : u_contrast;
+    
+    // Create the center color with brightness applied
+    vec3 centerColor = vec3(brightness);
+    
+    // Mix between the outer color (with brightness) and center color
+    vec3 finalColor = mix(outerColor * brightness, centerColor, center);
+    
+    // Apply inverted contrast to the final color
+    finalColor = pow(finalColor, vec3(1.0 / contrast));
+    
+    return finalColor;
 }
 
 void main() {
