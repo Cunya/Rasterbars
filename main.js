@@ -423,7 +423,7 @@ class RasterBarsDemo {
                 bgBarOffset: 0.49,
                 bgBarThickness: 0.035,
                 bgBrightness: 0.51,
-                bgContrast: 0.1,
+                bgContrast: 0.3,
                 bgSaturation: 1.6,
                 bgColorShift: 0.8,
                 bgSineOffset: 0.44,
@@ -480,8 +480,8 @@ class RasterBarsDemo {
                 textXWaveAmplitude: 0.809,  // Wave Amount
                 textXWaveFrequency: 0.62,   // Wave Speed
                 textXWaveOffset: 1.9,       // Wave Phase
-                textSolidBlack: true,       // Solid Black
-                textUseBrightness: true     // Brightness Based
+                textSolidBlack: false,       // Solid Black
+                textUseBrightness: false     // Brightness Based
             }
         },
         {
@@ -515,6 +515,41 @@ class RasterBarsDemo {
                 textXWaveAmplitude: 0.314,  // Wave Amount
                 textXWaveFrequency: 0.81,   // Wave Speed
                 textXWaveOffset: 1.1,       // Wave Phase
+                textSolidBlack: false,       // Solid Black
+                textUseBrightness: false     // Brightness Based
+            }
+        },
+        {
+            name: 'Slow Waves',
+            params: {
+                // Background parameters
+                bgNumBars: 96,
+                bgBarSpeed: 0.1,
+                bgBarOffset: 0.27,
+                bgBarThickness: 0.015,
+                bgBrightness: 0.63,
+                bgContrast: 0.7,
+                bgSaturation: 1.7,
+                bgColorShift: 0.5,
+                bgSineOffset: 0.57,
+                bgXWaveAmplitude: 0.95,   // Wave Amount
+                bgXWaveFrequency: 0.1,    // Wave Speed
+                bgXWaveOffset: 4.1,       // Wave Phase
+                bgUseBrightness: true,    // Brightness Based
+                
+                // Text parameters
+                textNumBars: 21,
+                textBarSpeed: 0.53,
+                textBarOffset: 0.45,
+                textBarThickness: 0.027,
+                textBrightness: 0.69,
+                textContrast: 1.3,
+                textSaturation: 0.6,
+                textColorShift: 0.2,
+                textSineOffset: 0.7,
+                textXWaveAmplitude: 0.235,  // Wave Amount
+                textXWaveFrequency: 5.38,   // Wave Speed
+                textXWaveOffset: 2.1,       // Wave Phase
                 textSolidBlack: true,       // Solid Black
                 textUseBrightness: true     // Brightness Based
             }
@@ -678,6 +713,10 @@ class RasterBarsDemo {
         presetFolder.add({ randomize: () => this.randomizeParams() }, 'randomize')
             .name('Randomize Values');
         
+        // Add dump button
+        presetFolder.add({ dump: () => this.dumpCurrentParams() }, 'dump')
+            .name('Dump Settings to Console');
+        
         presetFolder.add({ savePreset: () => this.saveCurrentAsPreset() }, 'savePreset')
             .name('Save Current as Preset');
         
@@ -748,6 +787,38 @@ class RasterBarsDemo {
 
         // Update uniforms
         this.updateUniforms();
+    }
+
+    dumpCurrentParams() {
+        console.log('Background Bars');
+        console.log('bgNumBars\n' + this.params.bgNumBars);
+        console.log('bgBarSpeed\n' + this.params.bgBarSpeed);
+        console.log('bgBarOffset\n' + this.params.bgBarOffset);
+        console.log('bgBarThickness\n' + this.params.bgBarThickness);
+        console.log('bgBrightness\n' + this.params.bgBrightness);
+        console.log('bgContrast\n' + this.params.bgContrast);
+        console.log('bgSaturation\n' + this.params.bgSaturation);
+        console.log('bgColorShift\n' + this.params.bgColorShift);
+        console.log('bgSineOffset\n' + this.params.bgSineOffset);
+        console.log('Wave Amount\n' + this.params.bgXWaveAmplitude);
+        console.log('Wave Speed\n' + this.params.bgXWaveFrequency);
+        console.log('Wave Phase\n' + this.params.bgXWaveOffset);
+        console.log('Brightness Based\n' + this.params.bgUseBrightness);
+        console.log('Text Bars');
+        console.log('textNumBars\n' + this.params.textNumBars);
+        console.log('textBarSpeed\n' + this.params.textBarSpeed);
+        console.log('textBarOffset\n' + this.params.textBarOffset);
+        console.log('textBarThickness\n' + this.params.textBarThickness);
+        console.log('textBrightness\n' + this.params.textBrightness);
+        console.log('textContrast\n' + this.params.textContrast);
+        console.log('textSaturation\n' + this.params.textSaturation);
+        console.log('textColorShift\n' + this.params.textColorShift);
+        console.log('textSineOffset\n' + this.params.textSineOffset);
+        console.log('Wave Amount\n' + this.params.textXWaveAmplitude);
+        console.log('Wave Speed\n' + this.params.textXWaveFrequency);
+        console.log('Wave Phase\n' + this.params.textXWaveOffset);
+        console.log('Solid Black\n' + this.params.textSolidBlack);
+        console.log('Brightness Based\n' + this.params.textUseBrightness);
     }
 }
 
