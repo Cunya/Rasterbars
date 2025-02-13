@@ -16,6 +16,7 @@ uniform float u_textXWaveFrequency;
 uniform float u_textXWaveOffset;
 uniform bool u_textSolidBlack;
 uniform float u_contrast;
+uniform bool u_useBrightness;
 
 varying vec2 vUv;
 varying vec3 vPosition;
@@ -63,7 +64,7 @@ void main() {
     float time = u_time * u_barSpeed;
     
     vec3 color = vec3(0.0);
-    float maxIndex = -1.0;  // Track the highest bar index instead of brightness
+    float maxValue = -1.0;  // Will store either brightness or index
     
     float yPos = u_isText ? (pos.y + 0.5) : pos.y;
     
@@ -88,16 +89,23 @@ void main() {
             float normalizedPattern = distanceFromBar / u_barThickness;
             vec3 barColor = getRasterColor(normalizedPattern, i, u_isText);
             
-            // Use bar index for overlap priority
-            if (i > maxIndex) {
+            bool shouldUpdate;
+            if (u_useBrightness) {
+                float brightness = dot(barColor, vec3(0.299, 0.587, 0.114));
+                shouldUpdate = brightness > maxValue;
+            } else {
+                shouldUpdate = i > maxValue;
+            }
+            
+            if (shouldUpdate) {
                 color = barColor;
-                maxIndex = i;
+                maxValue = u_useBrightness ? dot(barColor, vec3(0.299, 0.587, 0.114)) : i;
             }
         }
     }
     
     if (u_isText) {
-        float alpha = maxIndex > -1.0 ? 1.0 : (u_textSolidBlack ? 1.0 : 0.0);
+        float alpha = maxValue > -1.0 ? 1.0 : (u_textSolidBlack ? 1.0 : 0.0);
         gl_FragColor = vec4(color, alpha);
     } else {
         gl_FragColor = vec4(color, 1.0);
