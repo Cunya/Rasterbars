@@ -10,8 +10,11 @@ uniform float u_sineOffset;
 uniform float u_colorShift;
 uniform float u_xWaveAmplitude;
 uniform float u_xWaveFrequency;
+uniform float u_xWaveOffset;
 uniform float u_textXWaveAmplitude;
 uniform float u_textXWaveFrequency;
+uniform float u_textXWaveOffset;
+uniform bool u_textSolidBlack;
 
 varying vec2 vUv;
 varying vec3 vPosition;
@@ -48,17 +51,10 @@ void main() {
     vec2 pos = u_isText ? vPosition.xy : vUv;
     float time = u_time * u_barSpeed;
     
-    float waveAmplitude = u_isText ? u_textXWaveAmplitude : u_xWaveAmplitude;
-    float waveFrequency = u_isText ? u_textXWaveFrequency : u_xWaveFrequency;
-    
-    float horizontalOffset = sin(pos.x * 3.14159 * 2.0) * waveAmplitude;
-    float verticalWave = sin(time * waveFrequency) * waveAmplitude;
-    float finalOffset = horizontalOffset * verticalWave;
-    
     vec3 color = vec3(0.0);
     float maxBrightness = -1.0;
     
-    float yPos = u_isText ? (pos.y + 0.5 + finalOffset) : (pos.y + finalOffset);
+    float yPos = u_isText ? (pos.y + 0.5) : pos.y;
     
     for (float i = 0.0; i < 24.0; i++) {
         if (i >= u_numBars) break;
@@ -67,7 +63,14 @@ void main() {
         float sinePhase = phase * u_sineOffset;
         float yOffset = sin(time + sinePhase) * u_barOffset;
         
-        float barY = 0.5 + yOffset;
+        float waveAmplitude = u_isText ? u_textXWaveAmplitude : u_xWaveAmplitude;
+        float waveFrequency = u_isText ? u_textXWaveFrequency : u_xWaveFrequency;
+        float wavePhase = u_isText ? u_textXWaveOffset : u_xWaveOffset;
+        
+        float barPhase = wavePhase * (i / u_numBars);
+        float horizontalOffset = sin(pos.x * 3.14159 * 2.0 + time * waveFrequency + barPhase) * waveAmplitude;
+        
+        float barY = 0.5 + yOffset + horizontalOffset;
         float distanceFromBar = abs(yPos - barY);
         
         if (distanceFromBar < u_barThickness) {
@@ -83,7 +86,8 @@ void main() {
     }
     
     if (u_isText) {
-        gl_FragColor = vec4(color, maxBrightness > -1.0 ? 1.0 : 0.0);
+        float alpha = maxBrightness > -1.0 ? 1.0 : (u_textSolidBlack ? 1.0 : 0.0);
+        gl_FragColor = vec4(color, alpha);
     } else {
         gl_FragColor = vec4(color, 1.0);
     }
