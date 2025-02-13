@@ -448,6 +448,76 @@ class RasterBarsDemo {
                 textSolidBlack: false,
                 textUseBrightness: false
             }
+        },
+        {
+            name: 'Minimal Lines',
+            params: {
+                // Background parameters
+                bgNumBars: 47,
+                bgBarSpeed: 0.19,
+                bgBarOffset: 0.47,
+                bgBarThickness: 0.047,
+                bgBrightness: 0.34,
+                bgContrast: 2.5,
+                bgSaturation: 0.1,
+                bgColorShift: 0.1,
+                bgSineOffset: 0.93,
+                bgXWaveAmplitude: 1.08,  // Wave Amount
+                bgXWaveFrequency: 2.0,   // Wave Speed
+                bgXWaveOffset: 5.6,      // Wave Phase
+                bgUseBrightness: true,   // Brightness Based
+                
+                // Text parameters
+                textNumBars: 13,
+                textBarSpeed: 1.33,
+                textBarOffset: 0.2,
+                textBarThickness: 0.042,
+                textBrightness: 0.83,
+                textContrast: 2.3,
+                textSaturation: 0.2,
+                textColorShift: 0.0,
+                textSineOffset: 0.2,
+                textXWaveAmplitude: 0.809,  // Wave Amount
+                textXWaveFrequency: 0.62,   // Wave Speed
+                textXWaveOffset: 1.9,       // Wave Phase
+                textSolidBlack: true,       // Solid Black
+                textUseBrightness: true     // Brightness Based
+            }
+        },
+        {
+            name: 'Subtle Motion',
+            params: {
+                // Background parameters
+                bgNumBars: 26,
+                bgBarSpeed: 0.38,
+                bgBarOffset: 0.41,
+                bgBarThickness: 0.012,
+                bgBrightness: 0.45,
+                bgContrast: 1.7,
+                bgSaturation: 0.8,
+                bgColorShift: 0.7,
+                bgSineOffset: 0.8,
+                bgXWaveAmplitude: 0.197,  // Wave Amount
+                bgXWaveFrequency: 2.2,    // Wave Speed
+                bgXWaveOffset: 0.1,       // Wave Phase
+                bgUseBrightness: true,    // Brightness Based
+                
+                // Text parameters
+                textNumBars: 66,
+                textBarSpeed: 1.36,
+                textBarOffset: 0.15,
+                textBarThickness: 0.015,
+                textBrightness: 0.89,
+                textContrast: 0.8,
+                textSaturation: 0.2,
+                textColorShift: 0.7,
+                textSineOffset: 0.3,
+                textXWaveAmplitude: 0.314,  // Wave Amount
+                textXWaveFrequency: 0.81,   // Wave Speed
+                textXWaveOffset: 1.1,       // Wave Phase
+                textSolidBlack: true,       // Solid Black
+                textUseBrightness: true     // Brightness Based
+            }
         }];
     }
 
