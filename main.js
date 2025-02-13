@@ -48,11 +48,31 @@ class RasterBarsDemo {
             xWaveFrequency: 0.5
         };
         
+        this.gui = null;
+        this.presets = this.loadPresets();
+        this.currentPresetIndex = 0;
+        this.isTransitioning = false;
+        this.cyclePresets = true;
+        this.lastTransitionTime = 0;
+        this.cyclePeriod = 30; // Default cycle period in seconds
+        this.transitionDuration = 5000; // 5 second transition
+        this.cycleWaitDuration = 25000; // Initial wait duration (will be updated by setCyclePeriod)
+        this.transitionStartParams = null;
+        this.cycleTimeoutId = null;
+        this.guiVisible = false;
+        
         this.setup();
         this.createScene();
         this.loadText();
         this.setupGUI();
         this.animate();
+        
+        // Start cycling immediately if enabled
+        if (this.cyclePresets && this.presets.length > 1) {
+            setTimeout(() => {
+                this.loadPreset(1); // Start with the second preset
+            }, 1000); // Wait 1 second after initialization
+        }
     }
 
     setup() {
@@ -160,6 +180,7 @@ class RasterBarsDemo {
 
     setupGUI() {
         const gui = new dat.GUI({ autoPlace: false });
+        this.gui = gui;
         gui.domElement.style.position = 'absolute';
         gui.domElement.style.top = '30px';
         gui.domElement.style.right = '2px';
@@ -195,14 +216,13 @@ class RasterBarsDemo {
         }, 100);
 
         closeButton.addEventListener('click', () => {
-            if (gui.domElement.style.display === 'none') {
-                gui.domElement.style.display = 'block';
-                closeButton.textContent = 'Close Controls';
-            } else {
-                gui.domElement.style.display = 'none';
-                closeButton.textContent = 'Open Controls';
-            }
+            this.guiVisible = !this.guiVisible;
+            gui.domElement.style.display = this.guiVisible ? 'block' : 'none';
+            closeButton.textContent = this.guiVisible ? 'Close Controls' : 'Open Controls';
         });
+        
+        // Set initial visibility
+        gui.domElement.style.display = this.guiVisible ? 'block' : 'none';
         
         // Background controls
         const bgFolder = gui.addFolder('Background Bars');
@@ -236,6 +256,11 @@ class RasterBarsDemo {
         textFolder.add(this.params, 'textSolidBlack').name('Solid Black Background').onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textUseBrightness').name('Brightness Based Overlapping').onChange(() => this.updateUniforms());
         textFolder.open();
+
+        // Presets controls
+        const presetsFolder = gui.addFolder('Presets');
+        presetsFolder.open();
+        this.updatePresetFolder();
     }
 
     updateUniforms() {
@@ -281,14 +306,210 @@ class RasterBarsDemo {
     animate() {
         requestAnimationFrame(() => this.animate());
         
-        const time = performance.now() * 0.001;
+        const time = performance.now();
+        const deltaTime = time - this.lastTransitionTime;
+
+        // Handle preset transitions
+        if (this.isTransitioning) {
+            const progress = Math.min(deltaTime / this.transitionDuration, 1);
+            const targetParams = this.presets[this.currentPresetIndex].params;
+
+            // Interpolate parameters
+            for (const key in this.params) {
+                if (typeof this.params[key] === 'number') {
+                    this.params[key] = this.transitionStartParams[key] + 
+                        (targetParams[key] - this.transitionStartParams[key]) * progress;
+                } else if (typeof this.params[key] === 'boolean') {
+                    // For boolean values, switch at 50% of the transition
+                    this.params[key] = progress > 0.5 ? targetParams[key] : this.transitionStartParams[key];
+                }
+            }
+
+            this.updateUniforms();
+
+            if (progress === 1) {
+                this.isTransitioning = false;
+                
+                // If cycling is enabled, queue up the next transition
+                if (this.cyclePresets) {
+                    this.cycleTimeoutId = setTimeout(() => {
+                        const nextIndex = (this.currentPresetIndex + 1) % this.presets.length;
+                        this.loadPreset(nextIndex);
+                    }, this.cycleWaitDuration);
+                }
+            }
+        }
+
         // Update time uniform for both materials
-        this.mesh.material.uniforms.u_time.value = time;
+        this.mesh.material.uniforms.u_time.value = time * 0.001;
         if (this.textMesh) {
-            this.textMesh.material.uniforms.u_time.value = time;
+            this.textMesh.material.uniforms.u_time.value = time * 0.001;
         }
         
         this.renderer.render(this.scene, this.camera);
+    }
+
+    loadPresets() {
+        const savedPresets = localStorage.getItem('rasterBarsPresets');
+        if (savedPresets) {
+            return JSON.parse(savedPresets);
+        }
+        // Default preset is the initial parameters
+        return [{
+            name: 'Default',
+            params: { ...this.params }
+        }];
+    }
+
+    savePresets() {
+        localStorage.setItem('rasterBarsPresets', JSON.stringify(this.presets));
+    }
+
+    saveCurrentAsPreset() {
+        const name = prompt('Enter preset name:', `Preset ${this.presets.length + 1}`);
+        if (name) {
+            this.presets.push({
+                name,
+                params: { ...this.params }
+            });
+            this.savePresets();
+            
+            const wasVisible = this.guiVisible;
+            
+            // Remove all folders and rebuild them
+            Object.keys(this.gui.__folders).forEach(name => {
+                this.gui.removeFolder(this.gui.__folders[name]);
+            });
+            
+            // Recreate all folders
+            this.setupGUI();
+            
+            // Restore visibility
+            this.guiVisible = wasVisible;
+            this.gui.domElement.style.display = wasVisible ? 'block' : 'none';
+            
+            // If cycling is enabled, make sure we include the new preset
+            if (this.cyclePresets && !this.isTransitioning && this.cycleTimeoutId) {
+                clearTimeout(this.cycleTimeoutId);
+                const nextIndex = (this.currentPresetIndex + 1) % this.presets.length;
+                this.loadPreset(nextIndex);
+            }
+        }
+    }
+
+    deletePreset(index) {
+        if (index === 0) {
+            alert('Cannot delete default preset');
+            return;
+        }
+        if (confirm(`Delete preset "${this.presets[index].name}"?`)) {
+            this.presets.splice(index, 1);
+            this.savePresets();
+            
+            const wasVisible = this.guiVisible;
+            
+            // Remove all folders and rebuild them
+            Object.keys(this.gui.__folders).forEach(name => {
+                this.gui.removeFolder(this.gui.__folders[name]);
+            });
+            
+            // Recreate all folders
+            this.setupGUI();
+            
+            // Restore visibility
+            this.guiVisible = wasVisible;
+            this.gui.domElement.style.display = wasVisible ? 'block' : 'none';
+            
+            // If cycling is enabled and we were on the deleted preset, move to the next one
+            if (this.cyclePresets) {
+                if (this.cycleTimeoutId) {
+                    clearTimeout(this.cycleTimeoutId);
+                }
+                if (index === this.currentPresetIndex) {
+                    const nextIndex = index % this.presets.length;
+                    this.loadPreset(nextIndex);
+                }
+            }
+        }
+    }
+
+    loadPreset(index) {
+        if (index >= 0 && index < this.presets.length) {
+            const preset = this.presets[index];
+            this.transitionStartParams = { ...this.params };
+            this.currentPresetIndex = index;
+            
+            // Start the transition
+            this.isTransitioning = true;
+            this.lastTransitionTime = performance.now();
+            
+            // Update GUI controllers
+            if (this.gui) {
+                for (const folder in this.gui.__folders) {
+                    const controllers = this.gui.__folders[folder].__controllers;
+                    controllers.forEach(controller => {
+                        if (controller.property in preset.params) {
+                            controller.setValue(preset.params[controller.property]);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    updatePresetFolder() {
+        if (!this.gui || !this.gui.__folders['Presets']) {
+            return;
+        }
+
+        // Remove old preset controls
+        const presetFolder = this.gui.__folders['Presets'];
+        for (const controller of presetFolder.__controllers.slice()) {
+            presetFolder.remove(controller);
+        }
+        
+        // Add preset controls with onChange handler for cyclePresets
+        presetFolder.add(this, 'cyclePresets')
+            .name('Auto Cycle Presets')
+            .onChange(enabled => {
+                if (!enabled && this.cycleTimeoutId) {
+                    clearTimeout(this.cycleTimeoutId);
+                    this.cycleTimeoutId = null;
+                } else if (enabled && this.presets.length > 1) {
+                    // Start cycling if it was just enabled
+                    const nextIndex = (this.currentPresetIndex + 1) % this.presets.length;
+                    this.loadPreset(nextIndex);
+                }
+            });
+        presetFolder.add(this, 'cyclePeriod', 5, 120, 1)
+            .name('Cycle Period (seconds)')
+            .onChange(value => this.setCyclePeriod(value));
+        presetFolder.add({ savePreset: () => this.saveCurrentAsPreset() }, 'savePreset').name('Save Current as Preset');
+        
+        // Add buttons for each preset
+        this.presets.forEach((preset, index) => {
+            const presetControls = {
+                load: () => this.loadPreset(index)
+            };
+            
+            // Add delete button for non-default presets
+            if (index > 0) {
+                presetControls.delete = () => this.deletePreset(index);
+            }
+            
+            const row = presetFolder.addFolder(preset.name);
+            row.add(presetControls, 'load').name('Load');
+            if (index > 0) {
+                row.add(presetControls, 'delete').name('Delete');
+            }
+            row.open();
+        });
+    }
+
+    setCyclePeriod(seconds) {
+        this.cyclePeriod = seconds;
+        this.transitionDuration = Math.min(5000, seconds * 1000 * 0.2); // 20% of period, max 5 seconds
+        this.cycleWaitDuration = (seconds * 1000) - this.transitionDuration;
     }
 }
 
