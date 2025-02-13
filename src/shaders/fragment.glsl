@@ -8,6 +8,8 @@ uniform float u_barThickness;
 uniform float u_brightness;
 uniform float u_sineOffset;
 uniform float u_colorShift;
+uniform float u_xWaveAmplitude;
+uniform float u_xWaveFrequency;
 
 varying vec2 vUv;
 varying vec3 vPosition;
@@ -19,12 +21,22 @@ vec3 hsv2rgb(vec3 c) {
 }
 
 void main() {
-    float coord = u_isText ? vPosition.y : vUv.y;
+    vec2 pos = u_isText ? vPosition.xy : vUv;
     float time = u_time * u_barSpeed;
     
-    float bars = floor(coord * u_numBars) / u_numBars;
-    float offset = sin(time + bars * u_sineOffset * 6.28318) * u_barOffset;
-    float bar = fract((coord + offset) * u_numBars);
+    // Simple horizontal wave based on x position
+    float horizontalOffset = sin(pos.x * 3.14159 * 2.0) * u_xWaveAmplitude;
+    float verticalWave = sin(time * u_xWaveFrequency) * u_xWaveAmplitude;
+    
+    // Combine both waves
+    float finalOffset = horizontalOffset * verticalWave;
+    
+    // Apply the offset to the vertical position
+    float verticalPos = pos.y + finalOffset;
+    
+    float bars = floor(verticalPos * u_numBars) / u_numBars;
+    float yOffset = sin(time + bars * u_sineOffset * 6.28318) * u_barOffset;
+    float bar = fract((verticalPos + yOffset) * u_numBars);
     
     float brightness = smoothstep(0.5 - u_barThickness, 0.5, bar) * 
                       (1.0 - smoothstep(0.5, 0.5 + u_barThickness, bar));

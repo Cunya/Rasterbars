@@ -8,6 +8,9 @@ uniform float u_barThickness;
 uniform float u_brightness;
 uniform float u_sineOffset;
 uniform float u_colorShift;
+uniform float u_xWaveAmplitude;
+uniform float u_xWaveFrequency;
+
 varying vec2 vUv;
 varying vec3 vPosition;
 
@@ -40,22 +43,25 @@ vec3 getRasterColor(float barPattern, float barIndex, bool isText) {
 }
 
 void main() {
+    vec2 pos = u_isText ? vPosition.xy : vUv;
+    float time = u_time * u_barSpeed;
+    
+    // Add horizontal wave
+    float horizontalOffset = sin(pos.x * 3.14159 * 2.0) * u_xWaveAmplitude;
+    float verticalWave = sin(time * u_xWaveFrequency) * u_xWaveAmplitude;
+    float finalOffset = horizontalOffset * verticalWave;
+    
     vec3 color = vec3(0.0);
     float maxBrightness = -1.0;
     
-    float yPos;
-    if (u_isText) {
-        yPos = vPosition.y + 0.5;
-    } else {
-        yPos = vUv.y;
-    }
+    float yPos = u_isText ? (pos.y + 0.5 + finalOffset) : (pos.y + finalOffset);
     
     for (float i = 0.0; i < 24.0; i++) {
         if (i >= u_numBars) break;
         
         float phase = (i / u_numBars) * 3.14159;
         float sinePhase = phase * u_sineOffset;
-        float yOffset = sin(u_time * u_barSpeed + sinePhase) * u_barOffset;
+        float yOffset = sin(time + sinePhase) * u_barOffset;
         
         float barY = 0.5 + yOffset;
         float distanceFromBar = abs(yPos - barY);

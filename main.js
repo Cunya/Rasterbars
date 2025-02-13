@@ -27,7 +27,10 @@ class RasterBarsDemo {
             textBrightness: 0.2,
             textSineOffset: 0.4,
             // Shared parameters
-            colorShift: 1.0
+            colorShift: 1.0,
+            // Add new parameters for x-wave
+            xWaveAmplitude: 0.1,
+            xWaveFrequency: 0.5
         };
         
         this.setup();
@@ -69,7 +72,9 @@ class RasterBarsDemo {
                 u_barThickness: { value: isText ? this.params.textBarThickness : this.params.bgBarThickness },
                 u_brightness: { value: isText ? this.params.textBrightness : this.params.bgBrightness },
                 u_sineOffset: { value: isText ? this.params.textSineOffset : this.params.bgSineOffset },
-                u_colorShift: { value: this.params.colorShift }
+                u_colorShift: { value: this.params.colorShift },
+                u_xWaveAmplitude: { value: this.params.xWaveAmplitude },
+                u_xWaveFrequency: { value: this.params.xWaveFrequency }
             },
             vertexShader: isText ? textVertexShader : backgroundVertexShader,
             fragmentShader: fragmentShader,
@@ -185,6 +190,8 @@ class RasterBarsDemo {
         bgFolder.add(this.params, 'bgBarThickness', 0.005, 0.05).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgBrightness', 0.2, 1.0).onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgSineOffset', 0.0, 1.0).onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'xWaveAmplitude', 0.0, 0.3).name('X Wave Amount').onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'xWaveFrequency', 0.1, 2.0).name('X Wave Speed').onChange(() => this.updateUniforms());
         bgFolder.open();
 
         // Text controls
@@ -212,6 +219,8 @@ class RasterBarsDemo {
         this.mesh.material.uniforms.u_brightness.value = this.params.bgBrightness;
         this.mesh.material.uniforms.u_sineOffset.value = this.params.bgSineOffset;
         this.mesh.material.uniforms.u_colorShift.value = this.params.colorShift;
+        this.mesh.material.uniforms.u_xWaveAmplitude.value = this.params.xWaveAmplitude;
+        this.mesh.material.uniforms.u_xWaveFrequency.value = this.params.xWaveFrequency;
 
         // Update text uniforms if text mesh exists
         if (this.textMesh) {
@@ -222,6 +231,8 @@ class RasterBarsDemo {
             this.textMesh.material.uniforms.u_brightness.value = this.params.textBrightness;
             this.textMesh.material.uniforms.u_sineOffset.value = this.params.textSineOffset;
             this.textMesh.material.uniforms.u_colorShift.value = this.params.colorShift;
+            this.textMesh.material.uniforms.u_xWaveAmplitude.value = this.params.xWaveAmplitude;
+            this.textMesh.material.uniforms.u_xWaveFrequency.value = this.params.xWaveFrequency;
         }
     }
 
