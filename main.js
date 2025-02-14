@@ -553,6 +553,76 @@ class RasterBarsDemo {
                 textSolidBlack: true,       // Solid Black
                 textUseBrightness: true     // Brightness Based
             }
+        },
+        {
+            name: 'Monochrome Motion',
+            params: {
+                // Background parameters
+                bgNumBars: 24,
+                bgBarSpeed: 1.47,
+                bgBarOffset: 0.078,
+                bgBarThickness: 0.021,
+                bgBrightness: 0.167,
+                bgContrast: 0.96,
+                bgSaturation: 0.0,
+                bgColorShift: 0.956,
+                bgSineOffset: 0.706,
+                bgXWaveAmplitude: 0.09,   // Wave Amount
+                bgXWaveFrequency: 0.31,   // Wave Speed
+                bgXWaveOffset: 2.15,      // Wave Phase
+                bgUseBrightness: true,    // Brightness Based
+                
+                // Text parameters
+                textNumBars: 21,
+                textBarSpeed: 0.52,
+                textBarOffset: 0.313,
+                textBarThickness: 0.05,
+                textBrightness: 0.604,
+                textContrast: 2.7,
+                textSaturation: 0.56,
+                textColorShift: 0.728,
+                textSineOffset: 0.903,
+                textXWaveAmplitude: 0.462,  // Wave Amount
+                textXWaveFrequency: 0.1,    // Wave Speed
+                textXWaveOffset: 4.398,     // Wave Phase
+                textSolidBlack: true,       // Solid Black
+                textUseBrightness: false    // Brightness Based
+            }
+        },
+        {
+            name: 'Grayscale Flow',
+            params: {
+                // Background parameters
+                bgNumBars: 96,
+                bgBarSpeed: 0.1,
+                bgBarOffset: 0.05,
+                bgBarThickness: 0.0274,
+                bgBrightness: 0.325,
+                bgContrast: 0.945,
+                bgSaturation: 0.0,
+                bgColorShift: 0.109,
+                bgSineOffset: 0.655,
+                bgXWaveAmplitude: 0.601,  // Wave Amount
+                bgXWaveFrequency: 0.135,  // Wave Speed
+                bgXWaveOffset: 3.56,      // Wave Phase
+                bgUseBrightness: true,    // Brightness Based
+                
+                // Text parameters
+                textNumBars: 63,
+                textBarSpeed: 1.96,
+                textBarOffset: 0.484,
+                textBarThickness: 0.0134,
+                textBrightness: 0.722,
+                textContrast: 1.164,
+                textSaturation: 1.667,
+                textColorShift: 0.09,
+                textSineOffset: 0.961,
+                textXWaveAmplitude: 0.109,  // Wave Amount
+                textXWaveFrequency: 2.175,  // Wave Speed
+                textXWaveOffset: 2.215,     // Wave Phase
+                textSolidBlack: false,      // Solid Black
+                textUseBrightness: true     // Brightness Based
+            }
         }];
     }
 
