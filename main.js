@@ -56,6 +56,9 @@ class RasterBarsDemo {
             
             // Add background size control
             bgScale: 2.2,  // Changed from 1.5 to 2.2
+            
+            // Add text texture scale control
+            textScale: 0.2,  // Changed from 1.0 to 0.2
         };
         
         this.gui = null;
@@ -253,7 +256,7 @@ class RasterBarsDemo {
         // Calculate aspect ratio and maintain it in UV space
         const aspectRatio = textWidth / textHeight;
         
-        // Update UV coordinates to map properly to the front face
+        // Update UV coordinates with scale
         const positions = textGeometry.attributes.position;
         const uvs = new Float32Array(positions.count * 2);
         
@@ -262,15 +265,15 @@ class RasterBarsDemo {
             const y = positions.getY(i);
             const z = positions.getZ(i);
             
-            // Only map UVs for front face vertices (z is at the front)
             if (Math.abs(z - textBounds.max.z) < 0.001) {
-                // Map to the middle third of the texture vertically
                 const normalizedX = (x - textBounds.min.x) / textWidth;
                 const normalizedY = (y - textBounds.min.y) / textHeight;
                 
-                // Use only the middle section (0.4 to 0.6) of the bars texture
+                // Scale the V coordinate around the center
+                const scaledV = (normalizedY - 0.5) * this.params.textScale + 0.5;
+                
                 uvs[i * 2] = normalizedX;
-                uvs[i * 2 + 1] = normalizedY * 0.2 + 0.4; // Map Y to middle 20% of texture
+                uvs[i * 2 + 1] = scaledV;
             }
         }
         
@@ -388,6 +391,7 @@ class RasterBarsDemo {
         textFolder.add(this.params, 'textXWaveOffset', 0.0, 6.28).name('Wave Phase').onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textSolidBlack').name('Solid Black Background').onChange(() => this.updateUniforms());
         textFolder.add(this.params, 'textUseBrightness').name('Brightness Based Overlapping').onChange(() => this.updateUniforms());
+        textFolder.add(this.params, 'textScale', 0.01, 3.0).name('Bars Scale').onChange(() => this.updateTextUVs());
         textFolder.open();
 
         // Presets controls
@@ -529,6 +533,11 @@ class RasterBarsDemo {
                 if (preset.params.bgScale === undefined || preset.params.bgScale === 1.5) {
                     preset.params.bgScale = 2.2;
                 }
+                
+                // Update textScale to 0.2
+                if (preset.params.textScale === undefined || preset.params.textScale === 1.0) {
+                    preset.params.textScale = 0.2;
+                }
             });
             return presets;
         }
@@ -536,7 +545,7 @@ class RasterBarsDemo {
         // Update all default presets with new rotation values
         return [{
             name: 'Default',
-            params: { ...this.params }
+            params: { ...this.params, textScale: 0.2 }
         },
         {
             name: 'Neon Waves',
@@ -575,6 +584,7 @@ class RasterBarsDemo {
                 textRotationY: 0.2,
                 textRotationX: 0.2,
                 bgScale: 2.2,
+                textScale: 0.2,
             }
         },
         {
@@ -614,6 +624,7 @@ class RasterBarsDemo {
                 textRotationY: 0.2,
                 textRotationX: 0.2,
                 bgScale: 2.2,
+                textScale: 0.2,
             }
         },
         {
@@ -653,6 +664,7 @@ class RasterBarsDemo {
                 textRotationY: 0.2,
                 textRotationX: 0.2,
                 bgScale: 2.2,
+                textScale: 0.2,
             }
         },
         {
@@ -694,6 +706,7 @@ class RasterBarsDemo {
                 textRotationY: 0.2,
                 textRotationX: 0.2,
                 bgScale: 2.2,
+                textScale: 0.2,
             }
         },
         {
@@ -735,6 +748,7 @@ class RasterBarsDemo {
                 textRotationY: 0.2,
                 textRotationX: 0.2,
                 bgScale: 2.2,
+                textScale: 0.2,
             }
         },
         {
@@ -776,6 +790,7 @@ class RasterBarsDemo {
                 textRotationY: 0.2,
                 textRotationX: 0.2,
                 bgScale: 2.2,
+                textScale: 0.2,
             }
         },
         {
@@ -817,6 +832,7 @@ class RasterBarsDemo {
                 textRotationY: 0.2,
                 textRotationX: 0.2,
                 bgScale: 2.2,
+                textScale: 0.2,
             }
         }];
     }
@@ -1133,6 +1149,41 @@ class RasterBarsDemo {
         const planeWidth = this.frustumSize.width * this.params.bgScale;
         const planeHeight = this.frustumSize.height * this.params.bgScale;
         this.mesh.geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+    }
+
+    updateTextUVs() {
+        if (!this.textMesh) return;
+        
+        const geometry = this.textMesh.geometry;
+        const positions = geometry.attributes.position;
+        const uvs = new Float32Array(positions.count * 2);
+        
+        // Get geometry bounds
+        geometry.computeBoundingBox();
+        const bounds = geometry.boundingBox;
+        const width = bounds.max.x - bounds.min.x;
+        const height = bounds.max.y - bounds.min.y;
+        
+        for (let i = 0; i < positions.count; i++) {
+            const x = positions.getX(i);
+            const y = positions.getY(i);
+            const z = positions.getZ(i);
+            
+            // Only map UVs for front face vertices
+            if (Math.abs(z - bounds.max.z) < 0.001) {
+                const normalizedX = (x - bounds.min.x) / width;
+                const normalizedY = (y - bounds.min.y) / height;
+                
+                // Scale the V coordinate around the center
+                const scaledV = (normalizedY - 0.5) * this.params.textScale + 0.5;
+                
+                uvs[i * 2] = normalizedX;
+                uvs[i * 2 + 1] = scaledV;
+            }
+        }
+        
+        geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        geometry.attributes.uv.needsUpdate = true;
     }
 }
 
