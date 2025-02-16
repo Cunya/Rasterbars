@@ -47,7 +47,12 @@ class RasterBarsDemo {
             
             // Remove unused parameters
             xWaveAmplitude: 0.1,
-            xWaveFrequency: 0.5
+            xWaveFrequency: 0.5,
+            
+            // Add rotation parameters
+            textRotationSpeed: 0.5,
+            textRotationY: 0.4,
+            textRotationX: 0.4,
         };
         
         this.gui = null;
@@ -63,6 +68,23 @@ class RasterBarsDemo {
         this.transitionStartParams = null;
         this.cycleTimeoutId = null;
         this.guiVisible = false;
+        
+        // Create render target for text bars
+        this.textRenderTarget = new THREE.WebGLRenderTarget(1024, 1024, {
+            format: THREE.RGBAFormat,
+            type: THREE.FloatType,
+        });
+        
+        // Create a scene and camera for rendering the bars
+        this.barsScene = new THREE.Scene();
+        this.barsCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+        this.barsCamera.position.z = 1;
+        
+        // Create a plane for rendering the bars
+        const barsGeometry = new THREE.PlaneGeometry(2, 2);
+        const barsMaterial = this.createMaterial(true); // Use the existing bars shader
+        this.barsPlane = new THREE.Mesh(barsGeometry, barsMaterial);
+        this.barsScene.add(this.barsPlane);
         
         this.setup();
         this.createScene();
@@ -83,18 +105,32 @@ class RasterBarsDemo {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-        this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
-        this.camera.position.z = 1;
+        // Calculate camera settings based on screen size
+        const aspect = window.innerWidth / window.innerHeight;
+        const frustumHeight = 2;
+        const frustumWidth = frustumHeight * aspect;
+        
+        this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 100);
+        this.camera.position.z = 3; // Move camera closer (was 5)
+
+        // Store frustum size for background plane scaling
+        this.frustumSize = {
+            width: frustumWidth,
+            height: frustumHeight
+        };
 
         this.scene = new THREE.Scene();
-
         window.addEventListener('resize', () => this.onResize());
     }
 
     createScene() {
-        const geometry = new THREE.PlaneGeometry(2, 2);
+        // Make background plane large enough to cover viewport
+        const planeWidth = this.frustumSize.width * 1.5;  // Add some extra size for safety
+        const planeHeight = this.frustumSize.height * 1.5;
+        const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
         const backgroundMaterial = this.createMaterial(false);
         this.mesh = new THREE.Mesh(geometry, backgroundMaterial);
+        this.mesh.position.z = -2;  // Move further back
         this.scene.add(this.mesh);
     }
 
@@ -126,58 +162,145 @@ class RasterBarsDemo {
             fragmentShader: fragmentShader,
             transparent: isText,
             side: THREE.DoubleSide,
-            depthWrite: isText,
-            depthTest: true
+            depthWrite: true,
+            depthTest: true,
+            polygonOffset: isText,
+            polygonOffsetFactor: 1,
+            polygonOffsetUnits: 1
+        });
+    }
+
+    createTextMaterial() {
+        return new THREE.MeshStandardMaterial({
+            map: this.textRenderTarget.texture,
+            side: THREE.DoubleSide,
+            roughness: 0.4,
+            metalness: 0.1,
+            bumpMap: this.textRenderTarget.texture,
+            bumpScale: 0.02,
+            transparent: true,
         });
     }
 
     onResize() {
         const width = window.innerWidth;
         const height = window.innerHeight;
+        const aspect = width / height;
 
         this.renderer.setSize(width, height);
+        
+        // Update camera
+        this.camera.aspect = aspect;
+        
+        // Update frustum size
+        const frustumHeight = 2;
+        const frustumWidth = frustumHeight * aspect;
+        this.frustumSize = {
+            width: frustumWidth,
+            height: frustumHeight
+        };
+        
+        // Update background plane size
+        const planeWidth = this.frustumSize.width * 1.5;
+        const planeHeight = this.frustumSize.height * 1.5;
+        this.mesh.geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+        
+        this.camera.updateProjectionMatrix();
+        
+        // Update uniforms
         this.mesh.material.uniforms.u_resolution.value.set(width, height);
-        if (this.textMesh) {
-            this.textMesh.material.uniforms.u_resolution.value.set(width, height);
-        }
+        
+        // Update render target size maintaining square aspect ratio
+        const textureSize = Math.min(2048, Math.max(width, height));
+        this.textRenderTarget.setSize(textureSize, textureSize);
+        this.barsPlane.material.uniforms.u_resolution.value.set(textureSize, textureSize);
     }
 
     async loadText() {
         const loader = new FontLoader();
         
-        // Load a font
         const font = await new Promise((resolve) => {
             loader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', resolve);
         });
 
-        // Create text geometry
         const textGeometry = new TextGeometry('Symbio', {
             font: font,
-            size: 0.2,
-            height: 0.05,
-            curveSegments: 12,
+            size: 0.4,  // Increase text size
+            height: 0.1,  // Increase depth
+            curveSegments: 32,
             bevelEnabled: true,
-            bevelThickness: 0.01,
-            bevelSize: 0.005,
+            bevelThickness: 0.03,
+            bevelSize: 0.02,
             bevelOffset: 0,
-            bevelSegments: 5
+            bevelSegments: 8
         });
 
-        // Compute UVs for the text geometry
-        textGeometry.computeVertexNormals();
+        // Center the geometry properly
         textGeometry.computeBoundingBox();
         const textBounds = textGeometry.boundingBox;
         const textWidth = textBounds.max.x - textBounds.min.x;
         const textHeight = textBounds.max.y - textBounds.min.y;
+        
+        textGeometry.translate(
+            -(textBounds.min.x + textWidth/2),
+            -(textBounds.min.y + textHeight/2),
+            0
+        );
 
-        // Create material and mesh
-        const textMaterial = this.createMaterial(true);
+        // Calculate aspect ratio and maintain it in UV space
+        const aspectRatio = textWidth / textHeight;
+        
+        // Update UV coordinates to map properly to the front face
+        const positions = textGeometry.attributes.position;
+        const uvs = new Float32Array(positions.count * 2);
+        
+        for (let i = 0; i < positions.count; i++) {
+            const x = positions.getX(i);
+            const y = positions.getY(i);
+            const z = positions.getZ(i);
+            
+            // Only map UVs for front face vertices (z is at the front)
+            if (Math.abs(z - textBounds.max.z) < 0.001) {
+                // Map to the middle third of the texture vertically
+                const normalizedX = (x - textBounds.min.x) / textWidth;
+                const normalizedY = (y - textBounds.min.y) / textHeight;
+                
+                // Use only the middle section (0.4 to 0.6) of the bars texture
+                uvs[i * 2] = normalizedX;
+                uvs[i * 2 + 1] = normalizedY * 0.2 + 0.4; // Map Y to middle 20% of texture
+            }
+        }
+        
+        textGeometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+        textGeometry.computeVertexNormals();
+
+        // Create material with improved settings
+        const textMaterial = new THREE.MeshStandardMaterial({
+            map: this.textRenderTarget.texture,
+            side: THREE.DoubleSide,
+            roughness: 0.4,
+            metalness: 0.1,
+            bumpMap: this.textRenderTarget.texture,
+            bumpScale: 0.02,
+            transparent: true,
+            alphaTest: 0.01,
+            depthWrite: true,
+            depthTest: true,
+            opacity: 1,
+        });
+
         this.textMesh = new THREE.Mesh(textGeometry, textMaterial);
         
-        // Adjust text position to align with background coordinates
-        this.textMesh.position.x = -textWidth / 2;
-        this.textMesh.position.y = -textHeight / 2;
-        this.textMesh.position.z = 0.1;
+        // Adjust text position
+        this.textMesh.position.z = 0;  // Move text to center of scene
+        
+        // Add stronger lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+        this.scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        directionalLight.position.set(1, 1, 2);
+        this.scene.add(directionalLight);
 
         this.scene.add(this.textMesh);
     }
@@ -267,6 +390,13 @@ class RasterBarsDemo {
         const presetsFolder = gui.addFolder('Presets');
         presetsFolder.open();
         this.updatePresetFolder();
+
+        // Add rotation controls
+        const rotationFolder = gui.addFolder('Text Rotation');
+        rotationFolder.add(this.params, 'textRotationSpeed', 0, 2).name('Rotation Speed');
+        rotationFolder.add(this.params, 'textRotationY', 0, 2).name('Y Rotation');
+        rotationFolder.add(this.params, 'textRotationX', 0, 2).name('X Rotation');
+        rotationFolder.open();
     }
 
     updateUniforms() {
@@ -289,25 +419,22 @@ class RasterBarsDemo {
         this.mesh.material.uniforms.u_saturation.value = this.params.bgSaturation;
         this.mesh.material.uniforms.u_useBrightness.value = this.params.bgUseBrightness;
 
-        // Update text uniforms if text mesh exists
-        if (this.textMesh) {
-            this.textMesh.material.uniforms.u_numBars.value = this.params.textNumBars;
-            this.textMesh.material.uniforms.u_barSpeed.value = this.params.textBarSpeed;
-            this.textMesh.material.uniforms.u_barOffset.value = this.params.textBarOffset;
-            this.textMesh.material.uniforms.u_barThickness.value = this.params.textBarThickness;
-            this.textMesh.material.uniforms.u_brightness.value = this.params.textBrightness;
-            this.textMesh.material.uniforms.u_sineOffset.value = this.params.textSineOffset;
-            this.textMesh.material.uniforms.u_colorShift.value = this.params.textColorShift;
-            this.textMesh.material.uniforms.u_xWaveAmplitude.value = this.params.bgXWaveAmplitude;
-            this.textMesh.material.uniforms.u_xWaveFrequency.value = this.params.bgXWaveFrequency;
-            this.textMesh.material.uniforms.u_xWaveOffset.value = this.params.bgXWaveOffset;
-            this.textMesh.material.uniforms.u_textXWaveAmplitude.value = this.params.textXWaveAmplitude;
-            this.textMesh.material.uniforms.u_textXWaveFrequency.value = this.params.textXWaveFrequency;
-            this.textMesh.material.uniforms.u_textXWaveOffset.value = this.params.textXWaveOffset;
-            this.textMesh.material.uniforms.u_textSolidBlack.value = this.params.textSolidBlack;
-            this.textMesh.material.uniforms.u_contrast.value = this.params.textContrast;
-            this.textMesh.material.uniforms.u_saturation.value = this.params.textSaturation;
-            this.textMesh.material.uniforms.u_useBrightness.value = this.params.textUseBrightness;
+        // Update bars plane uniforms
+        if (this.barsPlane) {
+            this.barsPlane.material.uniforms.u_numBars.value = this.params.textNumBars;
+            this.barsPlane.material.uniforms.u_barSpeed.value = this.params.textBarSpeed;
+            this.barsPlane.material.uniforms.u_barOffset.value = this.params.textBarOffset;
+            this.barsPlane.material.uniforms.u_barThickness.value = this.params.textBarThickness;
+            this.barsPlane.material.uniforms.u_brightness.value = this.params.textBrightness;
+            this.barsPlane.material.uniforms.u_sineOffset.value = this.params.textSineOffset;
+            this.barsPlane.material.uniforms.u_colorShift.value = this.params.textColorShift;
+            this.barsPlane.material.uniforms.u_xWaveAmplitude.value = this.params.textXWaveAmplitude;
+            this.barsPlane.material.uniforms.u_xWaveFrequency.value = this.params.textXWaveFrequency;
+            this.barsPlane.material.uniforms.u_xWaveOffset.value = this.params.textXWaveOffset;
+            this.barsPlane.material.uniforms.u_textSolidBlack.value = this.params.textSolidBlack;
+            this.barsPlane.material.uniforms.u_contrast.value = this.params.textContrast;
+            this.barsPlane.material.uniforms.u_saturation.value = this.params.textSaturation;
+            this.barsPlane.material.uniforms.u_useBrightness.value = this.params.textUseBrightness;
         }
     }
 
@@ -316,6 +443,28 @@ class RasterBarsDemo {
         
         const time = performance.now();
         const deltaTime = time - this.lastTransitionTime;
+
+        // Ensure text visibility and material settings
+        this.ensureTextVisibility();
+        this.fixTextMaterial();
+        
+        // Update time uniforms for both materials
+        this.barsPlane.material.uniforms.u_time.value = time * 0.001;
+        this.mesh.material.uniforms.u_time.value = time * 0.001;
+
+        // First render the bars to the texture
+        this.renderer.setRenderTarget(this.textRenderTarget);
+        this.renderer.render(this.barsScene, this.barsCamera);
+        
+        // Then render the main scene with the 3D text
+        this.renderer.setRenderTarget(null);
+        
+        // Update text rotation (both X and Y axes)
+        if (this.textMesh) {
+            const rotationTime = time * 0.001 * this.params.textRotationSpeed;
+            this.textMesh.rotation.y = Math.sin(rotationTime) * this.params.textRotationY;
+            this.textMesh.rotation.x = Math.sin(rotationTime * 0.7) * this.params.textRotationX; // Slightly different frequency
+        }
 
         // Handle preset transitions
         if (this.isTransitioning) {
@@ -336,24 +485,19 @@ class RasterBarsDemo {
             }
 
             this.updateUniforms();
-
-            if (progress === 1) {
-                this.isTransitioning = false;
-                
-                // If cycling is enabled, queue up the next transition
-                if (this.cyclePresets) {
-                    this.cycleTimeoutId = setTimeout(() => {
-                        const nextIndex = (this.currentPresetIndex + 1) % this.presets.length;
-                        this.loadPreset(nextIndex);
-                    }, this.cycleWaitDuration);
-                }
-            }
         }
-
-        // Update time uniform for both materials
-        this.mesh.material.uniforms.u_time.value = time * 0.001;
-        if (this.textMesh) {
-            this.textMesh.material.uniforms.u_time.value = time * 0.001;
+        
+        // Complete transition if needed
+        if (this.isTransitioning && deltaTime >= this.transitionDuration) {
+            this.isTransitioning = false;
+            
+            // If cycling is enabled, queue up the next transition
+            if (this.cyclePresets) {
+                this.cycleTimeoutId = setTimeout(() => {
+                    const nextIndex = (this.currentPresetIndex + 1) % this.presets.length;
+                    this.loadPreset(nextIndex);
+                }, this.cycleWaitDuration);
+            }
         }
         
         this.renderer.render(this.scene, this.camera);
@@ -363,18 +507,24 @@ class RasterBarsDemo {
         const savedPresets = localStorage.getItem('rasterBarsPresets');
         if (savedPresets) {
             const presets = JSON.parse(savedPresets);
-            // Ensure all presets have saturation values
             presets.forEach(preset => {
-                if (preset.params.bgSaturation === undefined) {
-                    preset.params.bgSaturation = 1.0;
+                // Ensure rotation parameters
+                if (preset.params.textRotationSpeed === undefined) {
+                    preset.params.textRotationSpeed = 0.5;
                 }
-                if (preset.params.textSaturation === undefined) {
-                    preset.params.textSaturation = 1.0;
+                if (preset.params.textRotationY === undefined) {
+                    preset.params.textRotationY = 0.4;
                 }
+                if (preset.params.textRotationX === undefined) {
+                    preset.params.textRotationX = 0.4;
+                }
+                // Remove unused rotation parameters
+                delete preset.params.textRotationZ;
             });
             return presets;
         }
-        // Default presets
+
+        // Default presets (update all presets to include rotation parameters)
         return [{
             name: 'Default',
             params: { ...this.params }
@@ -411,7 +561,10 @@ class RasterBarsDemo {
                 textXWaveFrequency: 4.99,  // Wave Speed
                 textXWaveOffset: 4.5,      // Wave Phase
                 textSolidBlack: true,
-                textUseBrightness: false
+                textUseBrightness: false,
+                textRotationSpeed: 0.5,
+                textRotationY: 0.4,
+                textRotationX: 0.4,
             }
         },
         {
@@ -446,7 +599,10 @@ class RasterBarsDemo {
                 textXWaveFrequency: 1.28,   // Wave Speed
                 textXWaveOffset: 2.1,       // Wave Phase
                 textSolidBlack: false,
-                textUseBrightness: false
+                textUseBrightness: false,
+                textRotationSpeed: 0.5,
+                textRotationY: 0.4,
+                textRotationX: 0.4,
             }
         },
         {
@@ -481,7 +637,10 @@ class RasterBarsDemo {
                 textXWaveFrequency: 0.62,   // Wave Speed
                 textXWaveOffset: 1.9,       // Wave Phase
                 textSolidBlack: false,       // Solid Black
-                textUseBrightness: false     // Brightness Based
+                textUseBrightness: false,     // Brightness Based
+                textRotationSpeed: 0.5,
+                textRotationY: 0.4,
+                textRotationX: 0.4,
             }
         },
         {
@@ -633,9 +792,17 @@ class RasterBarsDemo {
     saveCurrentAsPreset() {
         const name = prompt('Enter preset name:', `Preset ${this.presets.length + 1}`);
         if (name) {
+            // Ensure we include all parameters including rotation
+            const params = { ...this.params };
+            
+            // Explicitly set rotation parameters if they're undefined
+            if (params.textRotationSpeed === undefined) params.textRotationSpeed = 0.5;
+            if (params.textRotationY === undefined) params.textRotationY = 0.4;
+            if (params.textRotationX === undefined) params.textRotationX = 0.4;
+            
             this.presets.push({
                 name,
-                params: { ...this.params }
+                params
             });
             this.savePresets();
             
@@ -889,6 +1056,41 @@ class RasterBarsDemo {
         console.log('Wave Phase\n' + this.params.textXWaveOffset);
         console.log('Solid Black\n' + this.params.textSolidBlack);
         console.log('Brightness Based\n' + this.params.textUseBrightness);
+    }
+
+    ensureTextVisibility() {
+        if (this.textMesh) {
+            // Ensure the text material is properly configured
+            this.textMesh.material.transparent = true;
+            this.textMesh.material.alphaTest = 0.01;
+            this.textMesh.material.needsUpdate = true;
+            
+            // Ensure proper depth testing
+            this.textMesh.renderOrder = 1;
+            this.mesh.renderOrder = 0;
+        }
+    }
+
+    fixTextMaterial() {
+        if (this.textMesh && this.textMesh.material) {
+            const material = this.textMesh.material;
+            material.transparent = true;
+            material.alphaTest = 0.01;
+            material.depthWrite = true;
+            material.depthTest = true;
+            material.opacity = 1;
+            material.needsUpdate = true;
+            material.map = this.textRenderTarget.texture;
+            material.bumpMap = this.textRenderTarget.texture;
+            
+            // Ensure the texture is properly set
+            if (material.map) {
+                material.map.needsUpdate = true;
+            }
+            if (material.bumpMap) {
+                material.bumpMap.needsUpdate = true;
+            }
+        }
     }
 }
 
