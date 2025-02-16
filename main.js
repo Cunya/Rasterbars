@@ -51,8 +51,11 @@ class RasterBarsDemo {
             
             // Add rotation parameters
             textRotationSpeed: 0.5,
-            textRotationY: 0.4,
-            textRotationX: 0.4,
+            textRotationY: 0.2,
+            textRotationX: 0.2,
+            
+            // Add background size control
+            bgScale: 2.2,  // Changed from 1.5 to 2.2
         };
         
         this.gui = null;
@@ -125,12 +128,12 @@ class RasterBarsDemo {
 
     createScene() {
         // Make background plane large enough to cover viewport
-        const planeWidth = this.frustumSize.width * 1.5;  // Add some extra size for safety
-        const planeHeight = this.frustumSize.height * 1.5;
+        const planeWidth = this.frustumSize.width * this.params.bgScale;
+        const planeHeight = this.frustumSize.height * this.params.bgScale;
         const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
         const backgroundMaterial = this.createMaterial(false);
         this.mesh = new THREE.Mesh(geometry, backgroundMaterial);
-        this.mesh.position.z = -2;  // Move further back
+        this.mesh.position.z = -2;
         this.scene.add(this.mesh);
     }
 
@@ -200,9 +203,9 @@ class RasterBarsDemo {
             height: frustumHeight
         };
         
-        // Update background plane size
-        const planeWidth = this.frustumSize.width * 1.5;
-        const planeHeight = this.frustumSize.height * 1.5;
+        // Update background plane size with scale factor
+        const planeWidth = this.frustumSize.width * this.params.bgScale;
+        const planeHeight = this.frustumSize.height * this.params.bgScale;
         this.mesh.geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
         
         this.camera.updateProjectionMatrix();
@@ -366,6 +369,7 @@ class RasterBarsDemo {
         bgFolder.add(this.params, 'bgXWaveFrequency', 0.1, 8.0).name('Wave Speed').onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgXWaveOffset', 0.0, 6.28).name('Wave Phase').onChange(() => this.updateUniforms());
         bgFolder.add(this.params, 'bgUseBrightness').name('Brightness Based Overlapping').onChange(() => this.updateUniforms());
+        bgFolder.add(this.params, 'bgScale', 0.5, 3.0).name('Background Size').onChange(() => this.updateBackgroundSize());
         bgFolder.open();
 
         // Text controls
@@ -508,23 +512,28 @@ class RasterBarsDemo {
         if (savedPresets) {
             const presets = JSON.parse(savedPresets);
             presets.forEach(preset => {
-                // Ensure rotation parameters
+                // Ensure rotation parameters with new values
                 if (preset.params.textRotationSpeed === undefined) {
                     preset.params.textRotationSpeed = 0.5;
                 }
-                if (preset.params.textRotationY === undefined) {
-                    preset.params.textRotationY = 0.4;
+                if (preset.params.textRotationY === undefined || preset.params.textRotationY === 0.4) {
+                    preset.params.textRotationY = 0.2;
                 }
-                if (preset.params.textRotationX === undefined) {
-                    preset.params.textRotationX = 0.4;
+                if (preset.params.textRotationX === undefined || preset.params.textRotationX === 0.4) {
+                    preset.params.textRotationX = 0.2;
                 }
                 // Remove unused rotation parameters
                 delete preset.params.textRotationZ;
+                
+                // Update bgScale to 2.2
+                if (preset.params.bgScale === undefined || preset.params.bgScale === 1.5) {
+                    preset.params.bgScale = 2.2;
+                }
             });
             return presets;
         }
 
-        // Default presets (update all presets to include rotation parameters)
+        // Update all default presets with new rotation values
         return [{
             name: 'Default',
             params: { ...this.params }
@@ -563,8 +572,9 @@ class RasterBarsDemo {
                 textSolidBlack: true,
                 textUseBrightness: false,
                 textRotationSpeed: 0.5,
-                textRotationY: 0.4,
-                textRotationX: 0.4,
+                textRotationY: 0.2,
+                textRotationX: 0.2,
+                bgScale: 2.2,
             }
         },
         {
@@ -601,8 +611,9 @@ class RasterBarsDemo {
                 textSolidBlack: false,
                 textUseBrightness: false,
                 textRotationSpeed: 0.5,
-                textRotationY: 0.4,
-                textRotationX: 0.4,
+                textRotationY: 0.2,
+                textRotationX: 0.2,
+                bgScale: 2.2,
             }
         },
         {
@@ -639,8 +650,9 @@ class RasterBarsDemo {
                 textSolidBlack: false,       // Solid Black
                 textUseBrightness: false,     // Brightness Based
                 textRotationSpeed: 0.5,
-                textRotationY: 0.4,
-                textRotationX: 0.4,
+                textRotationY: 0.2,
+                textRotationX: 0.2,
+                bgScale: 2.2,
             }
         },
         {
@@ -675,7 +687,13 @@ class RasterBarsDemo {
                 textXWaveFrequency: 0.81,   // Wave Speed
                 textXWaveOffset: 1.1,       // Wave Phase
                 textSolidBlack: false,       // Solid Black
-                textUseBrightness: false     // Brightness Based
+                textUseBrightness: false,     // Brightness Based
+                
+                // Add missing rotation parameters
+                textRotationSpeed: 0.5,
+                textRotationY: 0.2,
+                textRotationX: 0.2,
+                bgScale: 2.2,
             }
         },
         {
@@ -710,7 +728,13 @@ class RasterBarsDemo {
                 textXWaveFrequency: 5.38,   // Wave Speed
                 textXWaveOffset: 2.1,       // Wave Phase
                 textSolidBlack: true,       // Solid Black
-                textUseBrightness: true     // Brightness Based
+                textUseBrightness: true,    // Brightness Based
+                
+                // Add rotation parameters
+                textRotationSpeed: 0.5,
+                textRotationY: 0.2,
+                textRotationX: 0.2,
+                bgScale: 2.2,
             }
         },
         {
@@ -745,7 +769,13 @@ class RasterBarsDemo {
                 textXWaveFrequency: 0.1,    // Wave Speed
                 textXWaveOffset: 4.398,     // Wave Phase
                 textSolidBlack: true,       // Solid Black
-                textUseBrightness: false    // Brightness Based
+                textUseBrightness: false,    // Brightness Based
+                
+                // Add rotation parameters
+                textRotationSpeed: 0.5,
+                textRotationY: 0.2,
+                textRotationX: 0.2,
+                bgScale: 2.2,
             }
         },
         {
@@ -780,7 +810,13 @@ class RasterBarsDemo {
                 textXWaveFrequency: 2.175,  // Wave Speed
                 textXWaveOffset: 2.215,     // Wave Phase
                 textSolidBlack: false,      // Solid Black
-                textUseBrightness: true     // Brightness Based
+                textUseBrightness: true,    // Brightness Based
+                
+                // Add rotation parameters
+                textRotationSpeed: 0.5,
+                textRotationY: 0.2,
+                textRotationX: 0.2,
+                bgScale: 2.2,
             }
         }];
     }
@@ -797,8 +833,8 @@ class RasterBarsDemo {
             
             // Explicitly set rotation parameters if they're undefined
             if (params.textRotationSpeed === undefined) params.textRotationSpeed = 0.5;
-            if (params.textRotationY === undefined) params.textRotationY = 0.4;
-            if (params.textRotationX === undefined) params.textRotationX = 0.4;
+            if (params.textRotationY === undefined) params.textRotationY = 0.2;
+            if (params.textRotationX === undefined) params.textRotationX = 0.2;
             
             this.presets.push({
                 name,
@@ -1091,6 +1127,12 @@ class RasterBarsDemo {
                 material.bumpMap.needsUpdate = true;
             }
         }
+    }
+
+    updateBackgroundSize() {
+        const planeWidth = this.frustumSize.width * this.params.bgScale;
+        const planeHeight = this.frustumSize.height * this.params.bgScale;
+        this.mesh.geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
     }
 }
 
